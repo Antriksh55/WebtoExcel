@@ -285,6 +285,7 @@
       .sheet { box-shadow: none; border: 2px solid #000; padding: .8rem; max-width: 100%; }
       .action-bar { display: none; }
       .btn-add-row { display: none; }
+      .patient-info-panel { display: none; }
       @page { size: A4 portrait; margin: 1cm; }
     }
 
@@ -292,6 +293,77 @@
       body { padding: .4rem; }
       .meta-grid { grid-template-columns: 1fr 1fr; }
       .td-meal { writing-mode: horizontal-tb; transform: none; width: auto; }
+    }
+
+    /* ── Patient Info Panel ─────────────────────────────────── */
+    .patient-info-panel {
+      max-width: 960px;
+      margin: 0 auto 1rem;
+      background: #1e2535;
+      border: 1px solid #2e3a50;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,.2);
+      position: relative;
+      overflow: hidden;
+    }
+    .patient-info-panel::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      background: linear-gradient(180deg, #4f8ef7, #a855f7);
+    }
+    .pip-header {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      margin-bottom: .85rem;
+      flex-wrap: wrap;
+    }
+    .pip-title {
+      font-size: .82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: #a5c8ff;
+    }
+    .pip-note {
+      font-size: .7rem;
+      color: #4a5a72;
+      margin-left: auto;
+      font-style: italic;
+    }
+    .pip-fields {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: .6rem .9rem;
+    }
+    .pip-field { display: flex; flex-direction: column; gap: .25rem; }
+    .pip-field.pip-wide { grid-column: span 2; }
+    .pip-field label {
+      font-size: .68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: #7a8ba6;
+    }
+    .pip-field input {
+      border: none;
+      border-bottom: 1.5px solid #2e3a50;
+      background: transparent;
+      font-size: .85rem;
+      padding: .25rem .3rem;
+      outline: none;
+      color: #e2e8f0;
+      transition: border-color .15s;
+    }
+    .pip-field input:focus { border-bottom-color: #4f8ef7; }
+    .pip-field input::placeholder { color: #3a4a63; }
+
+    @media (max-width: 600px) {
+      .pip-fields { grid-template-columns: 1fr 1fr; }
+      .pip-field.pip-wide { grid-column: span 2; }
     }
   </style>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
@@ -304,6 +376,41 @@
     <button class="btn btn-print" onclick="downloadExcel()">⬇ Download Excel</button>
   </div>
 
+  <!-- Patient Info Panel (website only — never exported) -->
+  <div class="patient-info-panel">
+    <div class="pip-header">
+      <span>👤</span>
+      <span class="pip-title">Patient Information</span>
+      <span class="pip-note">Stored on this device only · Not included in Excel export</span>
+    </div>
+    <div class="pip-fields">
+      <div class="pip-field">
+        <label>Full Name</label>
+        <input type="text" id="meta-name" placeholder="e.g. Ramesh Kumar" />
+      </div>
+      <div class="pip-field">
+        <label>Age</label>
+        <input type="number" id="meta-age" placeholder="Years" min="0" max="150" />
+      </div>
+      <div class="pip-field">
+        <label>Phone</label>
+        <input type="tel" id="meta-phone" placeholder="Contact number" />
+      </div>
+      <div class="pip-field pip-wide">
+        <label>Address</label>
+        <input type="text" id="meta-address" placeholder="e.g. 12, MG Road, Delhi" />
+      </div>
+      <div class="pip-field">
+        <label>Diagnosis / Condition</label>
+        <input type="text" id="meta-diagnosis" placeholder="e.g. Type 2 Diabetes" />
+      </div>
+      <div class="pip-field">
+        <label>Allergies</label>
+        <input type="text" id="meta-allergies" placeholder="e.g. Peanuts, Gluten" />
+      </div>
+    </div>
+  </div>
+
   <div class="sheet" id="sheet">
 
     <div class="sheet-title">
@@ -311,7 +418,7 @@
       <p>Clinical Nutrition Tracking — Medical Diet Selection System</p>
     </div>
 
-    <!-- Meta -->
+    <!-- Meta (Visit/Date only — shown on sheet, not in Excel) -->
     <div class="meta-grid">
       <div class="meta-field">
         <label>Visit No.</label>
@@ -328,18 +435,6 @@
       <div class="meta-field">
         <label>Date</label>
         <input type="date" id="meta-date" />
-      </div>
-      <div class="meta-field" style="grid-column:span 2">
-        <label>Patient Name</label>
-        <input type="text" id="meta-name" placeholder="Full name" />
-      </div>
-      <div class="meta-field">
-        <label>Age</label>
-        <input type="number" id="meta-age" placeholder="Years" min="0" max="150" />
-      </div>
-      <div class="meta-field">
-        <label>Phone</label>
-        <input type="tel" id="meta-phone" placeholder="Contact number" />
       </div>
     </div>
 
@@ -634,122 +729,120 @@
       buildTable();
     }
 
-    // ── Auto-fill patient meta from localStorage ──────────────
+    // ── Patient meta: save & load from localStorage ───────────
     function loadPatientMeta() {
       try {
         const raw = localStorage.getItem("diet_patient_meta");
         if (!raw) return;
         const p = JSON.parse(raw);
-        if (p.name)  document.getElementById("meta-name").value  = p.name;
-        if (p.age)   document.getElementById("meta-age").value   = p.age;
-        if (p.phone) document.getElementById("meta-phone").value = p.phone;
+        if (p.name)      document.getElementById("meta-name")     ?.setAttribute("value", p.name);
+        if (p.age)       document.getElementById("meta-age")      ?.setAttribute("value", p.age);
+        if (p.phone)     document.getElementById("meta-phone")    ?.setAttribute("value", p.phone);
+        if (p.address)   document.getElementById("meta-address")  ?.setAttribute("value", p.address);
+        if (p.diagnosis) document.getElementById("meta-diagnosis")?.setAttribute("value", p.diagnosis);
+        if (p.allergies) document.getElementById("meta-allergies")?.setAttribute("value", p.allergies);
+        // Set values directly too
+        ["name","age","phone","address","diagnosis","allergies"].forEach(k => {
+          const el = document.getElementById("meta-"+k);
+          if (el && p[k]) el.value = p[k];
+        });
       } catch {}
     }
 
+    function savePatientMeta() {
+      const p = {
+        name:      document.getElementById("meta-name")     ?.value || "",
+        age:       document.getElementById("meta-age")      ?.value || "",
+        phone:     document.getElementById("meta-phone")    ?.value || "",
+        address:   document.getElementById("meta-address")  ?.value || "",
+        diagnosis: document.getElementById("meta-diagnosis")?.value || "",
+        allergies: document.getElementById("meta-allergies")?.value || "",
+      };
+      localStorage.setItem("diet_patient_meta", JSON.stringify(p));
+    }
+
+    ["meta-name","meta-age","meta-phone","meta-address","meta-diagnosis","meta-allergies"]
+      .forEach(id => document.getElementById(id)?.addEventListener("input", savePatientMeta));
+
     // ── Download Excel ────────────────────────────────────────
     function downloadExcel() {
-      // ── Patient meta ────────────────────────────────────────
-      const visitNo = document.getElementById("meta-visit").value    || "—";
-      const name    = document.getElementById("meta-name").value     || "—";
-      const age     = document.getElementById("meta-age").value      ? document.getElementById("meta-age").value + " yrs" : "—";
-      const phone   = document.getElementById("meta-phone").value    || "—";
-      const site    = document.getElementById("meta-site").value     || "—";
-      const initials= document.getElementById("meta-initials").value || "—";
-      const date    = document.getElementById("meta-date").value     || new Date().toISOString().slice(0,10);
+      const date    = document.getElementById("meta-date").value || new Date().toISOString().slice(0,10);
+      const visitNo = document.getElementById("meta-visit").value || "—";
 
-      const aoa   = [];   // array of arrays (rows)
-      const merges = [];  // SheetJS merge objects
+      const aoa    = [];
+      const merges = [];
 
-      // ── Title block ─────────────────────────────────────────
-      aoa.push(["PATIENT DIET LOG SHEET"]);
-      merges.push({ s:{r:0,c:0}, e:{r:0,c:7} });
-      aoa.push([]);
-      aoa.push(["Visit No.", visitNo, "Site No.", site, "Subject Initials", initials, "Date", date]);
-      aoa.push(["Patient Name", name, "Age", age, "Phone", phone, "", ""]);
-      aoa.push([]);
-
-      // ── Column header row ────────────────────────────────────
-      const headerRowIdx = aoa.length;
+      // ── Column header row ─────────────────────────────────
       aoa.push(["Meal", "Visit No.", "Item", "Qty", "Fats (g)", "Carbs (g)", "Protein (g)", "Calories (kcal)"]);
 
-      // ── Meal data ────────────────────────────────────────────
-      MEALS.forEach(meal => {
-        // Collect filled item rows for this meal
-        const tbody = document.getElementById("diet-tbody");
-        const mealRows = Array.from(tbody.querySelectorAll("tr")).filter(tr => {
-          return tr.querySelector(`input[data-meal="${meal.id}"]`) &&
-                 !tr.querySelector(".btn-add-row");
-        });
+      let grandFats = 0, grandCarbs = 0, grandProtein = 0, grandCal = 0;
 
-        // Build item data array (only rows with at least item or a nutrition value)
+      // ── Meal data ─────────────────────────────────────────
+      MEALS.forEach(meal => {
+        const tbody    = document.getElementById("diet-tbody");
+        const mealRows = Array.from(tbody.querySelectorAll("tr")).filter(tr =>
+          tr.querySelector(`input[data-meal="${meal.id}"]`) && !tr.querySelector(".btn-add-row")
+        );
+
+        // Collect item rows
         const itemData = [];
         mealRows.forEach(tr => {
           const itemInps = tr.querySelectorAll("td.td-item input, td.td-qty input");
-          const item     = itemInps[0] ? itemInps[0].value.trim() : "";
-          const qty      = itemInps[1] ? itemInps[1].value.trim() : "";
-          const fats     = tr.querySelector(`input[data-col="fats"]`)    ?.value.trim() || "";
-          const carbs    = tr.querySelector(`input[data-col="carbs"]`)   ?.value.trim() || "";
-          const protein  = tr.querySelector(`input[data-col="protein"]`) ?.value.trim() || "";
-          const cal      = tr.querySelector(`input[data-col="cal"]`)     ?.value.trim() || "";
-          itemData.push({ item, qty, fats, carbs, protein, cal });
+          const item     = itemInps[0]?.value.trim() || "";
+          const qty      = itemInps[1]?.value.trim() || "";
+          const fats     = parseFloat(tr.querySelector(`input[data-col="fats"]`)   ?.value) || 0;
+          const carbs    = parseFloat(tr.querySelector(`input[data-col="carbs"]`)  ?.value) || 0;
+          const protein  = parseFloat(tr.querySelector(`input[data-col="protein"]`)?.value) || 0;
+          const cal      = parseFloat(tr.querySelector(`input[data-col="cal"]`)    ?.value) || 0;
+          // Only include rows that have at least an item name or a value
+          if (item || fats || carbs || protein || cal) {
+            itemData.push({ item, qty,
+              fats:    fats    || "",
+              carbs:   carbs   || "",
+              protein: protein || "",
+              cal:     cal     || "",
+              _fats: fats, _carbs: carbs, _protein: protein, _cal: cal });
+          }
         });
 
-        // Ensure at least 1 row per meal
-        if (itemData.length === 0) itemData.push({ item:"", qty:"", fats:"", carbs:"", protein:"", cal:"" });
+        if (itemData.length === 0) return; // skip empty meals
 
         const mealStartRow = aoa.length;
-        const mealRowCount = itemData.length;
 
-        // Write one Excel row per food item
         itemData.forEach((d, i) => {
           aoa.push([
-            i === 0 ? meal.label : "",   // Meal label — only first row, rest blank (merged below)
-            i === 0 ? visitNo    : "",   // Visit No.  — same
-            d.item    || (i === 0 ? "" : ""),
-            d.qty     || "",
-            d.fats    || "",
-            d.carbs   || "",
-            d.protein || "",
-            d.cal     || "",
+            i === 0 ? meal.label : "",
+            i === 0 ? visitNo   : "",
+            d.item, d.qty,
+            d.fats, d.carbs, d.protein, d.cal,
           ]);
+          grandFats    += d._fats;
+          grandCarbs   += d._carbs;
+          grandProtein += d._protein;
+          grandCal     += d._cal;
         });
 
-        // Merge Meal label column (col 0) across all rows of this meal
-        if (mealRowCount > 1) {
-          merges.push({
-            s: { r: mealStartRow,                c: 0 },
-            e: { r: mealStartRow + mealRowCount - 1, c: 0 },
-          });
-          // Merge Visit No. column (col 1) across all rows of this meal
-          merges.push({
-            s: { r: mealStartRow,                c: 1 },
-            e: { r: mealStartRow + mealRowCount - 1, c: 1 },
-          });
+        // Merge Meal label (col 0) and Visit No. (col 1) vertically
+        if (itemData.length > 1) {
+          merges.push({ s:{r:mealStartRow,c:0}, e:{r:mealStartRow+itemData.length-1,c:0} });
+          merges.push({ s:{r:mealStartRow,c:1}, e:{r:mealStartRow+itemData.length-1,c:1} });
         }
-
-        // Meal total row
-        const tFats    = document.getElementById(`total-${meal.id}-fats`)    ?.textContent || "0";
-        const tCarbs   = document.getElementById(`total-${meal.id}-carbs`)   ?.textContent || "0";
-        const tProtein = document.getElementById(`total-${meal.id}-protein`) ?.textContent || "0";
-        const tCal     = document.getElementById(`total-${meal.id}-cal`)     ?.textContent || "0";
-        aoa.push([`${meal.label} Total`, "", "", "", tFats, tCarbs, tProtein, tCal]);
       });
 
-      // Grand total
-      aoa.push([]);
+      // ── Grand total only (no per-meal totals) ─────────────
       aoa.push([
-        "DAILY TOTAL", "", "", "",
-        document.getElementById("grand-fats")    ?.textContent || "0",
-        document.getElementById("grand-carbs")   ?.textContent || "0",
-        document.getElementById("grand-protein") ?.textContent || "0",
-        document.getElementById("grand-cal")     ?.textContent || "0",
+        "TOTAL", "", "", "",
+        grandFats    ? (Number.isInteger(grandFats)    ? grandFats    : grandFats.toFixed(1))    : 0,
+        grandCarbs   ? (Number.isInteger(grandCarbs)   ? grandCarbs   : grandCarbs.toFixed(1))   : 0,
+        grandProtein ? (Number.isInteger(grandProtein) ? grandProtein : grandProtein.toFixed(1)) : 0,
+        grandCal     ? Math.round(grandCal) : 0,
       ]);
 
-      // ── Build worksheet ──────────────────────────────────────
+      // ── Worksheet ─────────────────────────────────────────
       const ws = XLSX.utils.aoa_to_sheet(aoa);
       ws["!merges"] = merges;
       ws["!cols"]   = [
-        { wch: 28 }, // Meal
+        { wch: 26 }, // Meal
         { wch: 10 }, // Visit No.
         { wch: 22 }, // Item
         { wch: 12 }, // Qty
@@ -759,10 +852,24 @@
         { wch: 16 }, // Calories
       ];
 
+      // Center-align meal label cells vertically using cell styles
+      // (SheetJS community edition supports alignment)
+      const totalRows = aoa.length;
+      for (let r = 1; r < totalRows; r++) {
+        const cellAddr = XLSX.utils.encode_cell({ r, c: 0 });
+        if (ws[cellAddr]) {
+          ws[cellAddr].s = { alignment: { vertical: "center", horizontal: "center", wrapText: true } };
+        }
+        const visitAddr = XLSX.utils.encode_cell({ r, c: 1 });
+        if (ws[visitAddr]) {
+          ws[visitAddr].s = { alignment: { vertical: "center", horizontal: "center" } };
+        }
+      }
+
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Diet Log");
 
-      const safeName = (document.getElementById("meta-name").value || "patient").replace(/\s+/g, "_");
+      const safeName = (document.getElementById("meta-name")?.value || "patient").replace(/\s+/g,"_");
       XLSX.writeFile(wb, `diet-log-${safeName}-${date}.xlsx`);
     }
 
