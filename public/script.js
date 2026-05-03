@@ -398,7 +398,6 @@ btnExport.addEventListener("click", () => {
     return;
   }
 
-  // ── Patient details ──────────────────────────────────────
   const patientName    = document.getElementById("p-name").value.trim();
   const patientAge     = document.getElementById("p-age").value.trim();
   const patientPhone   = document.getElementById("p-phone").value.trim();
@@ -407,74 +406,74 @@ btnExport.addEventListener("click", () => {
     day: "2-digit", month: "long", year: "numeric"
   });
 
-  // ── Build rows ───────────────────────────────────────────
-  const rows = [];
+  // ── Group selected items by meal ──────────────────────────
+  const MEAL_ORDER = ["Breakfast", "Lunch", "Snacks", "Dinner"];
+  const groups = {};
+  MEAL_ORDER.forEach(m => { groups[m] = []; });
 
-  // Patient info header block
-  rows.push(["MEDICAL DIET REPORT"]);
-  rows.push([]);
-  rows.push(["Patient Name",  patientName  || "—"]);
-  rows.push(["Age",           patientAge   ? `${patientAge} years` : "—"]);
-  rows.push(["Phone Number",  patientPhone || "—"]);
-  rows.push(["Address",       patientAddress || "—"]);
-  rows.push(["Report Date",   reportDate]);
-  rows.push([]); // blank separator row
+  selected.forEach(({ food, qty }) => {
+    const eq   = qty || food.qty;
+    const meal = food.meal || "Lunch";
+    const key  = MEAL_ORDER.includes(meal) ? meal : "Lunch";
+    groups[key].push({
+      item:     food.item,
+      qty:      eq,
+      fats:     fmt(scaleValue(food.fats,     food.qty, eq)),
+      carbs:    fmt(scaleValue(food.carbs,    food.qty, eq)),
+      protein:  fmt(scaleValue(food.protein,  food.qty, eq)),
+      calories: Math.round(scaleValue(food.calories, food.qty, eq)),
+      _fats:    scaleValue(food.fats,     food.qty, eq),
+      _carbs:   scaleValue(food.carbs,    food.qty, eq),
+      _protein: scaleValue(food.protein,  food.qty, eq),
+      _cal:     scaleValue(food.calories, food.qty, eq),
+    });
+  });
+
+  const aoa    = [];
+  const merges = [];
 
   // Column headers
-  rows.push(["Item", "Qty", "Category", "Fats (g)", "Carbs (g)", "Protein (g)", "Calories (kcal)"]);
+  aoa.push(["Meal", "Item", "Qty", "Fats (g)", "Carbs (g)", "Protein (g)", "Calories (kcal)"]);
 
-  // Food data rows — grouped by meal
-  const mealGroups = { Breakfast:[], Lunch:[], Snacks:[], Dinner:[] };
-  selected.forEach(({ food, qty }) => {
-    const eq = qty || food.qty;
-    const row = [
-      food.item, eq, food.category,
-      fmt(scaleValue(food.fats,     food.qty, eq)),
-      fmt(scaleValue(food.carbs,    food.qty, eq)),
-      fmt(scaleValue(food.protein,  food.qty, eq)),
-      Math.round(scaleValue(food.calories, food.qty, eq)),
-    ];
-    const m = food.meal || "Lunch";
-    if (mealGroups[m]) mealGroups[m].push(row);
-    else mealGroups["Lunch"].push(row);
-  });
-
-  ["Breakfast","Lunch","Snacks","Dinner"].forEach(meal => {
-    if (mealGroups[meal].length === 0) return;
-    rows.push([`— ${meal.toUpperCase()} —`]);
-    rows.push(["Item","Qty","Category","Fats (g)","Carbs (g)","Protein (g)","Calories (kcal)"]);
-    mealGroups[meal].forEach(r => rows.push(r));
-    rows.push([]);
-  });
-
-  // Totals row
   let tFats = 0, tCarbs = 0, tProtein = 0, tCal = 0;
-  selected.forEach(({ food, qty }) => {
-    const eq = qty || food.qty;
-    tFats    += scaleValue(food.fats,     food.qty, eq);
-    tCarbs   += scaleValue(food.carbs,    food.qty, eq);
-    tProtein += scaleValue(food.protein,  food.qty, eq);
-    tCal     += scaleValue(food.calories, food.qty, eq);
+
+  MEAL_ORDER.forEach(meal => {
+    const items = groups[meal];
+    if (!items || items.length === 0) return;
+
+    const startRow = aoa.length;
+    const midRow   = Math.floor(items.length / 2);
+
+    items.forEach((d, i) => {
+      aoa.push([
+        i === midRow ? meal : "",
+        d.item, d.qty,
+        d.fats, d.carbs, d.protein, d.calories,
+      ]);
+      tFats    += d._fats;
+      tCarbs   += d._carbs;
+      tProtein += d._protein;
+      tCal     += d._cal;
+    });
+
+    if (items.length > 1) {
+      merges.push({ s:{r:startRow,c:0}, e:{r:startRow+items.length-1,c:0} });
+    }
   });
-  rows.push([]);
-  rows.push(["TOTAL", "", "", fmt(tFats), fmt(tCarbs), fmt(tProtein), Math.round(tCal)]);
 
-  // ── Build worksheet ──────────────────────────────────────
-  const ws = XLSX.utils.aoa_to_sheet(rows);
+  // Grand total
+  aoa.push(["TOTAL","","", fmt(tFats), fmt(tCarbs), fmt(tProtein), Math.round(tCal)]);
 
-  // Column widths
-  ws["!cols"] = [
-    { wch: 24 }, { wch: 12 }, { wch: 12 },
-    { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 16 },
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws["!merges"] = merges;
+  ws["!cols"]   = [
+    {wch:22},{wch:22},{wch:12},{wch:10},{wch:10},{wch:12},{wch:16}
   ];
 
-  // Merge title cell A1 across columns
-  ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
-
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Diet Report");
+  XLSX.utils.book_append_sheet(wb, ws, "Diet Selection");
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today    = new Date().toISOString().slice(0, 10);
   const safeName = patientName ? patientName.replace(/\s+/g, "_") : "patient";
   XLSX.writeFile(wb, `diet-report-${safeName}-${today}.xlsx`);
 });

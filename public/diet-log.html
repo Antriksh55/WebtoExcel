@@ -764,27 +764,22 @@
     ["meta-name","meta-age","meta-phone","meta-address","meta-diagnosis","meta-allergies"]
       .forEach(id => document.getElementById(id)?.addEventListener("input", savePatientMeta));
 
-    // ── Download Excel ────────────────────────────────────────
-    function downloadExcel() {
-      const date    = document.getElementById("meta-date").value || new Date().toISOString().slice(0,10);
-      const visitNo = document.getElementById("meta-visit").value || "—";
-
+    // ── Shared Excel builder (used by diet-log and can be called externally)
+    function buildMealExcel(visitNo, date) {
       const aoa    = [];
       const merges = [];
 
-      // ── Column header row ─────────────────────────────────
+      // Column headers
       aoa.push(["Meal", "Visit No.", "Item", "Qty", "Fats (g)", "Carbs (g)", "Protein (g)", "Calories (kcal)"]);
 
       let grandFats = 0, grandCarbs = 0, grandProtein = 0, grandCal = 0;
 
-      // ── Meal data ─────────────────────────────────────────
       MEALS.forEach(meal => {
         const tbody    = document.getElementById("diet-tbody");
         const mealRows = Array.from(tbody.querySelectorAll("tr")).filter(tr =>
           tr.querySelector(`input[data-meal="${meal.id}"]`) && !tr.querySelector(".btn-add-row")
         );
 
-        // Collect item rows
         const itemData = [];
         mealRows.forEach(tr => {
           const itemInps = tr.querySelectorAll("td.td-item input, td.td-qty input");
@@ -794,25 +789,22 @@
           const carbs    = parseFloat(tr.querySelector(`input[data-col="carbs"]`)  ?.value) || 0;
           const protein  = parseFloat(tr.querySelector(`input[data-col="protein"]`)?.value) || 0;
           const cal      = parseFloat(tr.querySelector(`input[data-col="cal"]`)    ?.value) || 0;
-          // Only include rows that have at least an item name or a value
           if (item || fats || carbs || protein || cal) {
             itemData.push({ item, qty,
-              fats:    fats    || "",
-              carbs:   carbs   || "",
-              protein: protein || "",
-              cal:     cal     || "",
+              fats: fats||"", carbs: carbs||"", protein: protein||"", cal: cal||"",
               _fats: fats, _carbs: carbs, _protein: protein, _cal: cal });
           }
         });
 
-        if (itemData.length === 0) return; // skip empty meals
+        if (itemData.length === 0) return;
 
         const mealStartRow = aoa.length;
+        const midRow       = Math.floor(itemData.length / 2); // middle index
 
         itemData.forEach((d, i) => {
           aoa.push([
-            i === 0 ? meal.label : "",
-            i === 0 ? visitNo   : "",
+            i === midRow ? meal.label : "",   // label in middle row
+            i === midRow ? visitNo   : "",
             d.item, d.qty,
             d.fats, d.carbs, d.protein, d.cal,
           ]);
@@ -822,50 +814,31 @@
           grandCal     += d._cal;
         });
 
-        // Merge Meal label (col 0) and Visit No. (col 1) vertically
+        // Merge col 0 and col 1 across all rows of this meal
         if (itemData.length > 1) {
           merges.push({ s:{r:mealStartRow,c:0}, e:{r:mealStartRow+itemData.length-1,c:0} });
           merges.push({ s:{r:mealStartRow,c:1}, e:{r:mealStartRow+itemData.length-1,c:1} });
         }
       });
 
-      // ── Grand total only (no per-meal totals) ─────────────
-      aoa.push([
-        "TOTAL", "", "", "",
-        grandFats    ? (Number.isInteger(grandFats)    ? grandFats    : grandFats.toFixed(1))    : 0,
-        grandCarbs   ? (Number.isInteger(grandCarbs)   ? grandCarbs   : grandCarbs.toFixed(1))   : 0,
-        grandProtein ? (Number.isInteger(grandProtein) ? grandProtein : grandProtein.toFixed(1)) : 0,
-        grandCal     ? Math.round(grandCal) : 0,
-      ]);
+      // Grand total row
+      const fmt = v => v ? (Number.isInteger(v) ? v : parseFloat(v).toFixed(1)) : 0;
+      aoa.push(["TOTAL","","","", fmt(grandFats), fmt(grandCarbs), fmt(grandProtein), Math.round(grandCal)]);
 
-      // ── Worksheet ─────────────────────────────────────────
       const ws = XLSX.utils.aoa_to_sheet(aoa);
       ws["!merges"] = merges;
       ws["!cols"]   = [
-        { wch: 26 }, // Meal
-        { wch: 10 }, // Visit No.
-        { wch: 22 }, // Item
-        { wch: 12 }, // Qty
-        { wch: 10 }, // Fats
-        { wch: 10 }, // Carbs
-        { wch: 12 }, // Protein
-        { wch: 16 }, // Calories
+        {wch:26},{wch:10},{wch:22},{wch:12},{wch:10},{wch:10},{wch:12},{wch:16}
       ];
+      return ws;
+    }
 
-      // Center-align meal label cells vertically using cell styles
-      // (SheetJS community edition supports alignment)
-      const totalRows = aoa.length;
-      for (let r = 1; r < totalRows; r++) {
-        const cellAddr = XLSX.utils.encode_cell({ r, c: 0 });
-        if (ws[cellAddr]) {
-          ws[cellAddr].s = { alignment: { vertical: "center", horizontal: "center", wrapText: true } };
-        }
-        const visitAddr = XLSX.utils.encode_cell({ r, c: 1 });
-        if (ws[visitAddr]) {
-          ws[visitAddr].s = { alignment: { vertical: "center", horizontal: "center" } };
-        }
-      }
+    // ── Download Excel ────────────────────────────────────────
+    function downloadExcel() {
+      const date    = document.getElementById("meta-date").value  || new Date().toISOString().slice(0,10);
+      const visitNo = document.getElementById("meta-visit").value || "—";
 
+      const ws = buildMealExcel(visitNo, date);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Diet Log");
 
