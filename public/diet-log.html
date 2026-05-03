@@ -648,96 +648,122 @@
 
     // GöÇGöÇ Download Excel GöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇ
     function downloadExcel() {
-      const rows = [];
+      // GöÇGöÇ Patient meta GöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇ
+      const visitNo = document.getElementById("meta-visit").value    || "GÇö";
+      const name    = document.getElementById("meta-name").value     || "GÇö";
+      const age     = document.getElementById("meta-age").value      ? document.getElementById("meta-age").value + " yrs" : "GÇö";
+      const phone   = document.getElementById("meta-phone").value    || "GÇö";
+      const site    = document.getElementById("meta-site").value     || "GÇö";
+      const initials= document.getElementById("meta-initials").value || "GÇö";
+      const date    = document.getElementById("meta-date").value     || new Date().toISOString().slice(0,10);
 
-      // Patient meta header block
-      rows.push(["PATIENT DIET LOG SHEET"]);
-      rows.push([]);
-      rows.push(["Visit No.",     document.getElementById("meta-visit").value    || "GÇö"]);
-      rows.push(["Site No.",      document.getElementById("meta-site").value     || "GÇö"]);
-      rows.push(["Subject Init.", document.getElementById("meta-initials").value || "GÇö"]);
-      rows.push(["Patient Name",  document.getElementById("meta-name").value     || "GÇö"]);
-      rows.push(["Age",           document.getElementById("meta-age").value      ? document.getElementById("meta-age").value + " years" : "GÇö"]);
-      rows.push(["Phone",         document.getElementById("meta-phone").value    || "GÇö"]);
-      rows.push(["Date",          document.getElementById("meta-date").value     || "GÇö"]);
-      rows.push([]);
+      const aoa   = [];   // array of arrays (rows)
+      const merges = [];  // SheetJS merge objects
 
-      // Column headers
-      rows.push(["Meal", "Item", "Qty", "Fats (g)", "Carbs (g)", "Protein (g)", "Calories (kcal)", "Calories/Family/Others"]);
+      // GöÇGöÇ Title block GöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇ
+      aoa.push(["PATIENT DIET LOG SHEET"]);
+      merges.push({ s:{r:0,c:0}, e:{r:0,c:7} });
+      aoa.push([]);
+      aoa.push(["Visit No.", visitNo, "Site No.", site, "Subject Initials", initials, "Date", date]);
+      aoa.push(["Patient Name", name, "Age", age, "Phone", phone, "", ""]);
+      aoa.push([]);
 
-      // Read data from each meal section
+      // GöÇGöÇ Column header row GöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇ
+      const headerRowIdx = aoa.length;
+      aoa.push(["Meal", "Visit No.", "Item", "Qty", "Fats (g)", "Carbs (g)", "Protein (g)", "Calories (kcal)"]);
+
+      // GöÇGöÇ Meal data GöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇ
       MEALS.forEach(meal => {
-        const inputs = document.querySelectorAll(`input[data-meal="${meal.id}"]`);
-
-        // Group inputs by row index
-        const rowMap = {};
-        inputs.forEach(inp => {
-          const r = inp.dataset.row;
-          if (!rowMap[r]) rowMap[r] = {};
-          rowMap[r][inp.dataset.col] = inp.value;
-        });
-
-        // Also grab item/qty inputs for this meal section from the table rows
-        // We'll read them positionally from the tbody
+        // Collect filled item rows for this meal
         const tbody = document.getElementById("diet-tbody");
-        const allRows = Array.from(tbody.querySelectorAll("tr"));
-
-        // Find rows belonging to this meal by checking data-meal on their inputs
-        const mealRows = allRows.filter(tr => {
-          const inp = tr.querySelector(`input[data-meal="${meal.id}"]`);
-          return inp !== null && !tr.classList.contains("tr-total") && !tr.querySelector(".btn-add-row");
+        const mealRows = Array.from(tbody.querySelectorAll("tr")).filter(tr => {
+          return tr.querySelector(`input[data-meal="${meal.id}"]`) &&
+                 !tr.querySelector(".btn-add-row");
         });
 
-        mealRows.forEach((tr, i) => {
-          const itemInp = tr.querySelectorAll("td.td-item input, td.td-qty input");
-          const item    = itemInp[0] ? itemInp[0].value : "";
-          const qty     = itemInp[1] ? itemInp[1].value : "";
-
-          const fats    = tr.querySelector(`input[data-col="fats"]`)    ? tr.querySelector(`input[data-col="fats"]`).value    : "";
-          const carbs   = tr.querySelector(`input[data-col="carbs"]`)   ? tr.querySelector(`input[data-col="carbs"]`).value   : "";
-          const protein = tr.querySelector(`input[data-col="protein"]`) ? tr.querySelector(`input[data-col="protein"]`).value : "";
-          const cal     = tr.querySelector(`input[data-col="cal"]`)     ? tr.querySelector(`input[data-col="cal"]`).value     : "";
-          const family  = tr.querySelector("td.td-cal-family input")    ? tr.querySelector("td.td-cal-family input").value    : "";
-
-          if (item || qty || fats || carbs || protein || cal) {
-            rows.push([i === 0 ? meal.label : "", item, qty, fats, carbs, protein, cal, family]);
-          }
+        // Build item data array (only rows with at least item or a nutrition value)
+        const itemData = [];
+        mealRows.forEach(tr => {
+          const itemInps = tr.querySelectorAll("td.td-item input, td.td-qty input");
+          const item     = itemInps[0] ? itemInps[0].value.trim() : "";
+          const qty      = itemInps[1] ? itemInps[1].value.trim() : "";
+          const fats     = tr.querySelector(`input[data-col="fats"]`)    ?.value.trim() || "";
+          const carbs    = tr.querySelector(`input[data-col="carbs"]`)   ?.value.trim() || "";
+          const protein  = tr.querySelector(`input[data-col="protein"]`) ?.value.trim() || "";
+          const cal      = tr.querySelector(`input[data-col="cal"]`)     ?.value.trim() || "";
+          itemData.push({ item, qty, fats, carbs, protein, cal });
         });
+
+        // Ensure at least 1 row per meal
+        if (itemData.length === 0) itemData.push({ item:"", qty:"", fats:"", carbs:"", protein:"", cal:"" });
+
+        const mealStartRow = aoa.length;
+        const mealRowCount = itemData.length;
+
+        // Write one Excel row per food item
+        itemData.forEach((d, i) => {
+          aoa.push([
+            i === 0 ? meal.label : "",   // Meal label GÇö only first row, rest blank (merged below)
+            i === 0 ? visitNo    : "",   // Visit No.  GÇö same
+            d.item    || (i === 0 ? "" : ""),
+            d.qty     || "",
+            d.fats    || "",
+            d.carbs   || "",
+            d.protein || "",
+            d.cal     || "",
+          ]);
+        });
+
+        // Merge Meal label column (col 0) across all rows of this meal
+        if (mealRowCount > 1) {
+          merges.push({
+            s: { r: mealStartRow,                c: 0 },
+            e: { r: mealStartRow + mealRowCount - 1, c: 0 },
+          });
+          // Merge Visit No. column (col 1) across all rows of this meal
+          merges.push({
+            s: { r: mealStartRow,                c: 1 },
+            e: { r: mealStartRow + mealRowCount - 1, c: 1 },
+          });
+        }
 
         // Meal total row
-        const tFats    = document.getElementById(`total-${meal.id}-fats`)    ? document.getElementById(`total-${meal.id}-fats`).textContent    : "";
-        const tCarbs   = document.getElementById(`total-${meal.id}-carbs`)   ? document.getElementById(`total-${meal.id}-carbs`).textContent   : "";
-        const tProtein = document.getElementById(`total-${meal.id}-protein`) ? document.getElementById(`total-${meal.id}-protein`).textContent : "";
-        const tCal     = document.getElementById(`total-${meal.id}-cal`)     ? document.getElementById(`total-${meal.id}-cal`).textContent     : "";
-        rows.push([`${meal.label} Total`, "", "", tFats, tCarbs, tProtein, tCal, ""]);
-        rows.push([]);
+        const tFats    = document.getElementById(`total-${meal.id}-fats`)    ?.textContent || "0";
+        const tCarbs   = document.getElementById(`total-${meal.id}-carbs`)   ?.textContent || "0";
+        const tProtein = document.getElementById(`total-${meal.id}-protein`) ?.textContent || "0";
+        const tCal     = document.getElementById(`total-${meal.id}-cal`)     ?.textContent || "0";
+        aoa.push([`${meal.label} Total`, "", "", "", tFats, tCarbs, tProtein, tCal]);
       });
 
       // Grand total
-      rows.push([
-        "DAILY TOTAL", "", "",
-        document.getElementById("grand-fats")    ? document.getElementById("grand-fats").textContent    : "",
-        document.getElementById("grand-carbs")   ? document.getElementById("grand-carbs").textContent   : "",
-        document.getElementById("grand-protein") ? document.getElementById("grand-protein").textContent : "",
-        document.getElementById("grand-cal")     ? document.getElementById("grand-cal").textContent     : "",
-        ""
+      aoa.push([]);
+      aoa.push([
+        "DAILY TOTAL", "", "", "",
+        document.getElementById("grand-fats")    ?.textContent || "0",
+        document.getElementById("grand-carbs")   ?.textContent || "0",
+        document.getElementById("grand-protein") ?.textContent || "0",
+        document.getElementById("grand-cal")     ?.textContent || "0",
       ]);
 
-      // Build worksheet
-      const ws = XLSX.utils.aoa_to_sheet(rows);
-      ws["!cols"] = [
-        { wch: 28 }, { wch: 22 }, { wch: 12 },
-        { wch: 10 }, { wch: 10 }, { wch: 12 },
-        { wch: 16 }, { wch: 22 },
+      // GöÇGöÇ Build worksheet GöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇ
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      ws["!merges"] = merges;
+      ws["!cols"]   = [
+        { wch: 28 }, // Meal
+        { wch: 10 }, // Visit No.
+        { wch: 22 }, // Item
+        { wch: 12 }, // Qty
+        { wch: 10 }, // Fats
+        { wch: 10 }, // Carbs
+        { wch: 12 }, // Protein
+        { wch: 16 }, // Calories
       ];
-      ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 7 } }];
 
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Diet Log");
 
-      const name = (document.getElementById("meta-name").value || "patient").replace(/\s+/g, "_");
-      const date = document.getElementById("meta-date").value || new Date().toISOString().slice(0, 10);
-      XLSX.writeFile(wb, `diet-log-${name}-${date}.xlsx`);
+      const safeName = (document.getElementById("meta-name").value || "patient").replace(/\s+/g, "_");
+      XLSX.writeFile(wb, `diet-log-${safeName}-${date}.xlsx`);
     }
 
     // GöÇGöÇ Init GöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇ
