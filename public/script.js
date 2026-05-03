@@ -424,8 +424,7 @@ btnExport.addEventListener("click", () => {
     });
   });
 
-  const aoa    = [];
-  const merges = [];
+  const aoa = [];
 
   // Column headers
   aoa.push(["Meal", "Item", "Qty", "Fats (g)", "Carbs (g)", "Protein (g)", "Calories (kcal)"]);
@@ -436,10 +435,8 @@ btnExport.addEventListener("click", () => {
     const items = groups[meal];
     if (!items || items.length === 0) return;
 
-    const startRow = aoa.length; // first data row for this meal
-
     items.forEach((d, i) => {
-      // Meal label ONLY on first row — merge will span all rows of this meal
+      // Label only on first row, no merge — label naturally sits at top
       aoa.push([
         i === 0 ? meal : "",
         d.item, d.qty,
@@ -451,11 +448,6 @@ btnExport.addEventListener("click", () => {
       tCal     += d._cal;
     });
 
-    // Merge the meal label cell vertically across all rows of this meal
-    if (items.length > 1) {
-      merges.push({ s:{r:startRow,c:0}, e:{r:startRow+items.length-1,c:0} });
-    }
-
     // Blank separator row between meals
     aoa.push(["", "", "", "", "", "", ""]);
   });
@@ -464,8 +456,7 @@ btnExport.addEventListener("click", () => {
   aoa.push(["TOTAL","","", fmt(tFats), fmt(tCarbs), fmt(tProtein), Math.round(tCal)]);
 
   const ws = XLSX.utils.aoa_to_sheet(aoa);
-  ws["!merges"] = merges;
-  ws["!cols"]   = [
+  ws["!cols"] = [
     {wch:22},{wch:22},{wch:12},{wch:10},{wch:10},{wch:12},{wch:16}
   ];
 

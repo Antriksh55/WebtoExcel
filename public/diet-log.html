@@ -766,8 +766,7 @@
 
     // ── Shared Excel builder (used by diet-log and can be called externally)
     function buildMealExcel(visitNo, date) {
-      const aoa    = [];
-      const merges = [];
+      const aoa = [];
 
       // Column headers
       aoa.push(["Meal", "Visit No.", "Item", "Qty", "Fats (g)", "Carbs (g)", "Protein (g)", "Calories (kcal)"]);
@@ -800,7 +799,7 @@
 
         const mealStartRow = aoa.length;
 
-        // Meal label on FIRST row only — merge spans all rows
+        // Meal label on FIRST row only — no merge, label stays at top
         itemData.forEach((d, i) => {
           aoa.push([
             i === 0 ? meal.label : "",
@@ -814,12 +813,6 @@
           grandCal     += d._cal;
         });
 
-        // Merge col 0 (meal label) and col 1 (visit no) across all rows of this meal
-        if (itemData.length > 1) {
-          merges.push({ s:{r:mealStartRow,c:0}, e:{r:mealStartRow+itemData.length-1,c:0} });
-          merges.push({ s:{r:mealStartRow,c:1}, e:{r:mealStartRow+itemData.length-1,c:1} });
-        }
-
         // Blank separator row between meals
         aoa.push(["","","","","","","",""]);
       });
@@ -829,8 +822,7 @@
       aoa.push(["TOTAL","","","", fmt(grandFats), fmt(grandCarbs), fmt(grandProtein), Math.round(grandCal)]);
 
       const ws = XLSX.utils.aoa_to_sheet(aoa);
-      ws["!merges"] = merges;
-      ws["!cols"]   = [
+      ws["!cols"] = [
         {wch:26},{wch:10},{wch:22},{wch:12},{wch:10},{wch:10},{wch:12},{wch:16}
       ];
       return ws;
