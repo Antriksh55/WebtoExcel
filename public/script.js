@@ -398,22 +398,17 @@ btnExport.addEventListener("click", () => {
     return;
   }
 
-  const patientName    = document.getElementById("p-name").value.trim();
-  const patientAge     = document.getElementById("p-age").value.trim();
-  const patientPhone   = document.getElementById("p-phone").value.trim();
-  const patientAddress = document.getElementById("p-address").value.trim();
-  const reportDate     = new Date().toLocaleDateString("en-IN", {
-    day: "2-digit", month: "long", year: "numeric"
-  });
+  const patientName = document.getElementById("p-name").value.trim();
 
   // ── Group selected items by meal ──────────────────────────
-  const MEAL_ORDER = ["Breakfast", "Lunch", "Snacks", "Dinner"];
+  const MEAL_ORDER = ["Breakfast", "Snacks", "Lunch", "Dinner"];
   const groups = {};
   MEAL_ORDER.forEach(m => { groups[m] = []; });
 
   selected.forEach(({ food, qty }) => {
     const eq   = qty || food.qty;
     const meal = food.meal || "Lunch";
+    // Map "Snacks" items correctly
     const key  = MEAL_ORDER.includes(meal) ? meal : "Lunch";
     groups[key].push({
       item:     food.item,
@@ -441,12 +436,12 @@ btnExport.addEventListener("click", () => {
     const items = groups[meal];
     if (!items || items.length === 0) return;
 
-    const startRow = aoa.length;
-    const midRow   = Math.floor(items.length / 2);
+    const startRow = aoa.length; // first data row for this meal
 
     items.forEach((d, i) => {
+      // Meal label ONLY on first row — merge will span all rows of this meal
       aoa.push([
-        i === midRow ? meal : "",
+        i === 0 ? meal : "",
         d.item, d.qty,
         d.fats, d.carbs, d.protein, d.calories,
       ]);
@@ -456,9 +451,13 @@ btnExport.addEventListener("click", () => {
       tCal     += d._cal;
     });
 
+    // Merge the meal label cell vertically across all rows of this meal
     if (items.length > 1) {
       merges.push({ s:{r:startRow,c:0}, e:{r:startRow+items.length-1,c:0} });
     }
+
+    // Blank separator row between meals
+    aoa.push(["", "", "", "", "", "", ""]);
   });
 
   // Grand total

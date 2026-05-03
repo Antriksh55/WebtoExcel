@@ -799,12 +799,12 @@
         if (itemData.length === 0) return;
 
         const mealStartRow = aoa.length;
-        const midRow       = Math.floor(itemData.length / 2); // middle index
 
+        // Meal label on FIRST row only — merge spans all rows
         itemData.forEach((d, i) => {
           aoa.push([
-            i === midRow ? meal.label : "",   // label in middle row
-            i === midRow ? visitNo   : "",
+            i === 0 ? meal.label : "",
+            i === 0 ? visitNo   : "",
             d.item, d.qty,
             d.fats, d.carbs, d.protein, d.cal,
           ]);
@@ -814,11 +814,14 @@
           grandCal     += d._cal;
         });
 
-        // Merge col 0 and col 1 across all rows of this meal
+        // Merge col 0 (meal label) and col 1 (visit no) across all rows of this meal
         if (itemData.length > 1) {
           merges.push({ s:{r:mealStartRow,c:0}, e:{r:mealStartRow+itemData.length-1,c:0} });
           merges.push({ s:{r:mealStartRow,c:1}, e:{r:mealStartRow+itemData.length-1,c:1} });
         }
+
+        // Blank separator row between meals
+        aoa.push(["","","","","","","",""]);
       });
 
       // Grand total row
