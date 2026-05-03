@@ -2,43 +2,59 @@ const express = require("express");
 const path    = require("path");
 const fs      = require("fs");
 
-const app      = express();
-const PORT     = process.env.PORT || 3000;
+const app       = express();
+const PORT      = process.env.PORT || 3000;
 const DATA_PATH = path.join(__dirname, "data", "foods.json");
+
+// ── Vercel read-only filesystem detection ─────────────────────
+// On Vercel, __dirname is /var/task (read-only). Writes are not
+// persisted across requests. For production persistence, replace
+// writeFoods() with a database (MongoDB, PlanetScale, etc.)
+const IS_READONLY = process.env.VERCEL === "1";
+
+// ── In-memory store (used on Vercel to support POST in-session) 
+let memoryFoods = null;
 
 // ── Helpers ───────────────────────────────────────────────────
 
-/** Read foods from JSON file (always fresh, no require cache issues) */
 function readFoods() {
+  // Use in-memory store if already loaded (Vercel session)
+  if (memoryFoods) return memoryFoods;
   try {
-    return JSON.parse(fs.readFileSync(DATA_PATH, "utf8"));
+    const data = JSON.parse(fs.readFileSync(DATA_PATH, "utf8"));
+    memoryFoods = data;
+    return data;
   } catch (e) {
     console.error("Failed to read foods.json:", e.message);
+    memoryFoods = [];
     return [];
   }
 }
 
-/** Write foods array back to JSON file */
 function writeFoods(foods) {
-  fs.writeFileSync(DATA_PATH, JSON.stringify(foods, null, 2), "utf8");
+  memoryFoods = foods; // always update memory
+  if (IS_READONLY) return; // skip disk write on Vercel
+  try {
+    fs.writeFileSync(DATA_PATH, JSON.stringify(foods, null, 2), "utf8");
+  } catch (e) {
+    console.error("Failed to write foods.json:", e.message);
+  }
 }
 
 // ── Middleware ────────────────────────────────────────────────
 app.use(express.json());
 
-// ── API Routes (must be before static + catch-all) ────────────
+// ── API Routes ────────────────────────────────────────────────
 
-// GET /api/foods — return the food database as JSON
+// GET /api/foods
 app.get("/api/foods", (req, res) => {
-  const foods = readFoods();
-  res.json(foods);
+  res.json(readFoods());
 });
 
-// POST /api/foods — add a new food item and persist
+// POST /api/foods
 app.post("/api/foods", (req, res) => {
   const { item, qty, category, fats, carbs, protein, calories } = req.body;
 
-  // Validate required fields
   if (!item || !qty || !category || fats == null || carbs == null || protein == null || calories == null) {
     return res.status(400).json({ error: "All fields are required." });
   }
@@ -50,7 +66,6 @@ app.post("/api/foods", (req, res) => {
 
   const foods = readFoods();
 
-  // Check for duplicate (case-insensitive)
   const exists = foods.some(f => f.item.trim().toLowerCase() === item.trim().toLowerCase());
   if (exists) {
     return res.status(409).json({ error: `"${item}" already exists in the database.` });
@@ -69,18 +84,27 @@ app.post("/api/foods", (req, res) => {
   foods.push(newFood);
   writeFoods(foods);
 
-  res.status(201).json({ message: "Food item added successfully.", food: newFood });
+  res.status(201).json({
+    message: IS_READONLY
+      ? "Food item added for this session. Deploy a database for permanent storage."
+      : "Food item added successfully.",
+    food: newFood,
+  });
 });
 
 // ── Static files ──────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, "public")));
 
-// ── Catch-all: serve index.html ───────────────────────────────
+// ── Catch-all ─────────────────────────────────────────────────
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// ── Start Server ──────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`✅ Server running at http://localhost:${PORT}`);
-});
+// ── Start (local only — Vercel handles this automatically) ────
+if (!IS_READONLY) {
+  app.listen(PORT, () => {
+    console.log(`✅ Server running at http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;

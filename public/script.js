@@ -264,10 +264,10 @@ function updateSummary() {
 
   summaryText.textContent = `${count} item${count > 1 ? "s" : ""} selected`;
   summaryNutrients.innerHTML = `
-    <span class="nutrient-pill"><span>${fmt(totalFats)}g</span><span class="pill-label">Fats</span></span>
-    <span class="nutrient-pill"><span>${fmt(totalCarbs)}g</span><span class="pill-label">Carbs</span></span>
-    <span class="nutrient-pill"><span>${fmt(totalProtein)}g</span><span class="pill-label">Protein</span></span>
-    <span class="nutrient-pill"><span>${Math.round(totalCal)} kcal</span><span class="pill-label">Calories</span></span>
+    <span class="nutrient-pill fats"><span>${fmt(totalFats)}g</span><span class="pill-label">Fats</span></span>
+    <span class="nutrient-pill carbs"><span>${fmt(totalCarbs)}g</span><span class="pill-label">Carbs</span></span>
+    <span class="nutrient-pill protein"><span>${fmt(totalProtein)}g</span><span class="pill-label">Protein</span></span>
+    <span class="nutrient-pill cal"><span>${Math.round(totalCal)} kcal</span><span class="pill-label">Calories</span></span>
   `;
 }
 
