@@ -682,11 +682,10 @@
 
         if (itemData.length === 0) return;
 
-        const startRow = aoa.length;
         const lastIdx  = itemData.length - 1;
 
         itemData.forEach((d, i) => {
-          // Meal label on last row
+          // Meal label on last row only — no merge
           aoa.push([
             i === lastIdx ? meal.label : "",
             i === lastIdx ? visitNo   : "",
@@ -699,12 +698,6 @@
           grandCal     += d._cal;
         });
 
-        // Merge Meal col and Visit No col across all rows of this group
-        if (itemData.length > 1) {
-          merges.push({ s:{r:startRow,c:0}, e:{r:startRow+lastIdx,c:0} });
-          merges.push({ s:{r:startRow,c:1}, e:{r:startRow+lastIdx,c:1} });
-        }
-
         // Blank separator row between meals
         aoa.push(["","","","","","","",""]);
       });
@@ -713,12 +706,9 @@
       aoa.push(["TOTAL","","","", fmtN(grandFats), fmtN(grandCarbs), fmtN(grandProtein), Math.round(grandCal)]);
 
       const ws = XLSX.utils.aoa_to_sheet(aoa);
-      ws["!merges"] = merges;
       ws["!cols"] = [
         {wch:26},{wch:10},{wch:22},{wch:12},{wch:10},{wch:10},{wch:12},{wch:16}
       ];
-      // Turn off gridlines so meal groups look clean
-      ws["!sheetViews"] = [{ showGridLines: false }];
 
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Diet Log");

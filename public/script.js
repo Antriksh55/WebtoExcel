@@ -430,13 +430,11 @@ btnExport.addEventListener("click", () => {
     const items = groups[meal];
     if (!items || items.length === 0) return;
 
-    const startRow = aoa.length;
     const lastIdx  = items.length - 1;
 
     items.forEach((d, i) => {
-      // Meal label on last row; merge col 0 so no internal lines in that column
       aoa.push([
-        i === lastIdx ? meal : "",
+        i === lastIdx ? meal : "",   // label only on last row
         d.item, d.qty,
         d.fats, d.carbs, d.protein, d.calories,
       ]);
@@ -446,23 +444,16 @@ btnExport.addEventListener("click", () => {
       tCal     += d._cal;
     });
 
-    // Merge Meal column across all rows of this group (removes internal borders)
-    if (items.length > 1) {
-      merges.push({ s:{r:startRow,c:0}, e:{r:startRow+lastIdx,c:0} });
-    }
-
-    // Blank separator row between meals
+    // blank separator between meals
     aoa.push(["", "", "", "", "", "", ""]);
   });
 
   aoa.push(["TOTAL", "", "", fmt(tFats), fmt(tCarbs), fmt(tProtein), Math.round(tCal)]);
 
   const ws = XLSX.utils.aoa_to_sheet(aoa);
-  ws["!merges"] = merges;
   ws["!cols"] = [
     {wch:16},{wch:22},{wch:12},{wch:10},{wch:10},{wch:12},{wch:16}
   ];
-  ws["!sheetViews"] = [{ showGridLines: false }];
 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Diet Selection");
