@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Medical Diet Selection System</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- SheetJS CDN for Excel export -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-title">
+        <span class="header-icon">🏥</span>
+        <div>
+          <h1>Medical Diet Selection System</h1>
+          <p>Select food items and export a patient dietary report</p>
+        </div>
+      </div>
+      <div class="header-stats">
+        <div class="stat-chip" id="stat-selected">
+          <span class="stat-num" id="count-selected">0</span>
+          <span class="stat-label">Selected</span>
+        </div>
+        <div class="stat-chip highlight" id="stat-calories">
+          <span class="stat-num" id="count-calories">0</span>
+          <span class="stat-label">Total kcal</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main">
+
+    <!-- Controls Bar -->
+    <div class="controls-bar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="Search food items..." autocomplete="off" />
+        <button class="btn-icon" id="clear-search" title="Clear search" aria-label="Clear search">✕</button>
+      </div>
+
+      <div class="filter-wrap">
+        <label for="category-filter" class="sr-only">Filter by category</label>
+        <select id="category-filter">
+          <option value="">All Categories</option>
+          <option value="Veg">🥦 Veg</option>
+          <option value="Non-Veg">🍗 Non-Veg</option>
+          <option value="Beverage">🧃 Beverage</option>
+          <option value="Dessert">🍮 Dessert</option>
+        </select>
+      </div>
+
+      <div class="action-wrap">
+        <button class="btn btn-secondary" id="btn-select-all">Select All</button>
+        <button class="btn btn-secondary" id="btn-clear-all">Clear All</button>
+        <button class="btn btn-add" id="btn-add-food">+ Add Food</button>
+        <button class="btn btn-primary" id="btn-export">⬇ Download Excel</button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrapper">
+      <table id="food-table" aria-label="Food items selection table">
+        <thead>
+          <tr>
+            <th class="col-check">
+              <input type="checkbox" id="master-checkbox" title="Select all visible" aria-label="Select all visible items" />
+            </th>
+            <th class="col-item">Item</th>
+            <th class="col-cat">Category</th>
+            <th class="col-num">Fats (g)</th>
+            <th class="col-num">Carbs (g)</th>
+            <th class="col-num">Protein (g)</th>
+            <th class="col-num">Calories</th>
+            <th class="col-qty">Quantity</th>
+          </tr>
+        </thead>
+        <tbody id="food-tbody">
+          <!-- Rows injected by script.js -->
+        </tbody>
+      </table>
+      <div id="empty-state" class="empty-state hidden">
+        <span>😕</span>
+        <p>No food items match your search.</p>
+      </div>
+    </div>
+
+    <!-- Summary Footer -->
+    <div class="summary-bar" id="summary-bar">
+      <span id="summary-text">No items selected</span>
+      <div class="summary-nutrients" id="summary-nutrients"></div>
+    </div>
+
+  </main>
+
+  <!-- Add Food Modal -->
+  <div id="modal-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-title">Add New Food Item</h2>
+        <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+      </div>
+      <form id="add-food-form" novalidate>
+        <div class="form-grid">
+
+          <div class="form-group full-width">
+            <label for="f-item">Item Name <span class="required">*</span></label>
+            <input type="text" id="f-item" placeholder="e.g. Paneer bhurji" required />
+          </div>
+
+          <div class="form-group">
+            <label for="f-qty">Default Quantity <span class="required">*</span></label>
+            <input type="text" id="f-qty" placeholder="e.g. 100g or 1 pc" required />
+          </div>
+
+          <div class="form-group">
+            <label for="f-category">Category <span class="required">*</span></label>
+            <select id="f-category" required>
+              <option value="">Select category</option>
+              <option value="Veg">🥦 Veg</option>
+              <option value="Non-Veg">🍗 Non-Veg</option>
+              <option value="Beverage">🧃 Beverage</option>
+              <option value="Dessert">🍮 Dessert</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="f-fats">Fats (g) <span class="required">*</span></label>
+            <input type="number" id="f-fats" placeholder="0" min="0" step="0.1" required />
+          </div>
+
+          <div class="form-group">
+            <label for="f-carbs">Carbs (g) <span class="required">*</span></label>
+            <input type="number" id="f-carbs" placeholder="0" min="0" step="0.1" required />
+          </div>
+
+          <div class="form-group">
+            <label for="f-protein">Protein (g) <span class="required">*</span></label>
+            <input type="number" id="f-protein" placeholder="0" min="0" step="0.1" required />
+          </div>
+
+          <div class="form-group">
+            <label for="f-calories">Calories (kcal) <span class="required">*</span></label>
+            <input type="number" id="f-calories" placeholder="0" min="0" required />
+          </div>
+
+        </div>
+
+        <div id="form-error" class="form-error hidden"></div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-food">Save Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
