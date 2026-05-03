@@ -453,6 +453,8 @@ btnExport.addEventListener("click", () => {
   ws["!cols"] = [
     {wch:16},{wch:22},{wch:12},{wch:10},{wch:10},{wch:12},{wch:16}
   ];
+  // Turn off gridlines so meal groups look clean
+  ws["!sheetViews"] = [{ showGridLines: false }];
 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Diet Selection");
