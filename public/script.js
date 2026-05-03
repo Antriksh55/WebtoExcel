@@ -89,105 +89,183 @@ function scaleValue(baseValue, defaultQtyStr, currentQtyStr) {
   return (baseValue / base) * current;
 }
 
+// ─── Meal Tab State ───────────────────────────────────────────
+let activeMeal = "all";
+const collapsedMeals = new Set(); // tracks which meal sections are collapsed
+
+const MEAL_ORDER  = ["Breakfast", "Lunch", "Snacks", "Dinner"];
+const MEAL_EMOJI  = { Breakfast:"🌅", Lunch:"☀️", Snacks:"🍎", Dinner:"🌙" };
+const MEAL_BADGE  = { Breakfast:"meal-badge-breakfast", Lunch:"meal-badge-lunch",
+                      Snacks:"meal-badge-snacks",       Dinner:"meal-badge-dinner" };
+
+// Wire up meal tabs
+document.getElementById("meal-tabs").addEventListener("click", e => {
+  const tab = e.target.closest(".meal-tab");
+  if (!tab) return;
+  document.querySelectorAll(".meal-tab").forEach(t => t.classList.remove("active"));
+  tab.classList.add("active");
+  activeMeal = tab.dataset.meal;
+  renderTable();
+});
+
 // ─── Render ───────────────────────────────────────────────────
 
 function renderTable() {
   const query     = normalise(searchInput.value);
   const catFilter = categoryFilter.value;
 
+  // Filter by search + category + active meal tab
   visibleItems = FOOD_DB.filter(f => {
     const matchSearch = !query || normalise(f.item).includes(query);
     const matchCat    = !catFilter || f.category === catFilter;
-    return matchSearch && matchCat;
+    const matchMeal   = activeMeal === "all" || f.meal === activeMeal;
+    return matchSearch && matchCat && matchMeal;
   });
 
   emptyState.classList.toggle("hidden", visibleItems.length > 0);
-
   tbody.innerHTML = "";
+
+  if (visibleItems.length === 0) {
+    syncMasterCheckbox();
+    updateSummary();
+    return;
+  }
+
   const fragment = document.createDocumentFragment();
 
+  // Group items by meal
+  const groups = {};
+  const order  = activeMeal === "all" ? MEAL_ORDER : [activeMeal];
+
+  order.forEach(meal => { groups[meal] = []; });
   visibleItems.forEach(food => {
-    const key        = normalise(food.item);
-    const isSelected = selected.has(key);
-    // Use user-edited qty if selected, otherwise show default as placeholder value
-    const qty        = isSelected ? selected.get(key).qty : "";
+    const m = food.meal || "Lunch";
+    if (!groups[m]) groups[m] = [];
+    groups[m].push(food);
+  });
 
-    // Calculate scaled nutrition based on current qty
-    const displayQty = qty || food.qty;
-    const scaledFats     = scaleValue(food.fats,     food.qty, displayQty);
-    const scaledCarbs    = scaleValue(food.carbs,    food.qty, displayQty);
-    const scaledProtein  = scaleValue(food.protein,  food.qty, displayQty);
-    const scaledCalories = scaleValue(food.calories, food.qty, displayQty);
+  order.forEach(meal => {
+    const items = groups[meal];
+    if (!items || items.length === 0) return;
 
-    const tr = document.createElement("tr");
-    if (isSelected) tr.classList.add("selected");
-    tr.dataset.key = key;
+    const isCollapsed = collapsedMeals.has(meal);
 
-    tr.innerHTML = `
-      <td style="text-align:center">
-        <input type="checkbox" class="row-checkbox" aria-label="Select ${food.item}"
-          ${isSelected ? "checked" : ""} />
-      </td>
-      <td class="item-name">${food.item}</td>
-      <td><span class="badge ${badgeClass(food.category)}">${food.category}</span></td>
-      <td class="num-cell" data-field="fats">${fmt(scaledFats)}</td>
-      <td class="num-cell" data-field="carbs">${fmt(scaledCarbs)}</td>
-      <td class="num-cell" data-field="protein">${fmt(scaledProtein)}</td>
-      <td class="num-cell" data-field="calories">${fmt(scaledCalories)}</td>
-      <td>
-        <div class="qty-wrap ${!isSelected ? "qty-disabled" : ""}">
-          <button class="qty-btn qty-dec" ${!isSelected ? "disabled" : ""} aria-label="Decrease quantity">−</button>
-          <input type="text" class="qty-input" placeholder="${food.qty || 'e.g. 100g'}"
-            value="${qty}" ${!isSelected ? "disabled" : ""}
-            aria-label="Quantity for ${food.item}" />
-          <button class="qty-btn qty-inc" ${!isSelected ? "disabled" : ""} aria-label="Increase quantity">+</button>
-        </div>
-      </td>
+    // ── Group header row ──────────────────────────────────────
+    const groupTr = document.createElement("tr");
+    groupTr.className = "meal-group-row";
+    groupTr.dataset.meal = meal;
+
+    const groupTd = document.createElement("td");
+    groupTd.colSpan = 8;
+    groupTd.className = "meal-group-cell";
+    groupTd.innerHTML = `
+      <span>${MEAL_EMOJI[meal]}</span>
+      <span class="meal-group-label">${meal}</span>
+      <span class="meal-group-badge ${MEAL_BADGE[meal]}">${items.length} items</span>
+      <button class="meal-group-select" data-meal="${meal}">Select All</button>
+      <span class="meal-group-chevron ${isCollapsed ? "collapsed" : ""}">▼</span>
     `;
+    groupTr.appendChild(groupTd);
 
-    tr.querySelector(".row-checkbox").addEventListener("change", e => {
-      toggleRow(key, food, e.target.checked, tr);
+    // Toggle collapse on header click
+    groupTr.addEventListener("click", e => {
+      if (e.target.closest(".meal-group-select")) return;
+      if (collapsedMeals.has(meal)) collapsedMeals.delete(meal);
+      else collapsedMeals.add(meal);
+      renderTable();
     });
 
-    // Helper: update nutrition cells from a qty string
-    function applyQty(newQty) {
-      if (!selected.has(key)) return;
-      selected.get(key).qty = newQty;
-      const effectiveQty = newQty || food.qty;
-      tr.querySelector('[data-field="fats"]').textContent     = fmt(scaleValue(food.fats,     food.qty, effectiveQty));
-      tr.querySelector('[data-field="carbs"]').textContent    = fmt(scaleValue(food.carbs,    food.qty, effectiveQty));
-      tr.querySelector('[data-field="protein"]').textContent  = fmt(scaleValue(food.protein,  food.qty, effectiveQty));
-      tr.querySelector('[data-field="calories"]').textContent = fmt(scaleValue(food.calories, food.qty, effectiveQty));
-      updateSummary();
-    }
-
-    tr.querySelector(".qty-input").addEventListener("input", e => {
-      applyQty(e.target.value);
+    // Select all in this meal group
+    groupTd.querySelector(".meal-group-select").addEventListener("click", e => {
+      e.stopPropagation();
+      const allSelected = items.every(f => selected.has(normalise(f.item)));
+      items.forEach(food => {
+        const key = normalise(food.item);
+        if (allSelected) selected.delete(key);
+        else if (!selected.has(key)) selected.set(key, { food, qty: food.qty || "" });
+      });
+      renderTable();
     });
 
-    // Increment button
-    tr.querySelector(".qty-inc").addEventListener("click", () => {
-      if (!selected.has(key)) return;
-      const input  = tr.querySelector(".qty-input");
-      const parsed = parseQtyStr(input.value || food.qty);
-      const newNum = parsed.num + parsed.step;
-      const newQty = newNum + parsed.unit;
-      input.value  = newQty;
-      applyQty(newQty);
-    });
+    fragment.appendChild(groupTr);
 
-    // Decrement button
-    tr.querySelector(".qty-dec").addEventListener("click", () => {
-      if (!selected.has(key)) return;
-      const input  = tr.querySelector(".qty-input");
-      const parsed = parseQtyStr(input.value || food.qty);
-      const newNum = Math.max(0, parsed.num - parsed.step);
-      const newQty = newNum + parsed.unit;
-      input.value  = newQty;
-      applyQty(newQty);
-    });
+    if (isCollapsed) return; // skip item rows if collapsed
 
-    fragment.appendChild(tr);
+    // ── Item rows ─────────────────────────────────────────────
+    items.forEach(food => {
+      const key        = normalise(food.item);
+      const isSelected = selected.has(key);
+      const qty        = isSelected ? selected.get(key).qty : "";
+
+      const displayQty     = qty || food.qty;
+      const scaledFats     = scaleValue(food.fats,     food.qty, displayQty);
+      const scaledCarbs    = scaleValue(food.carbs,    food.qty, displayQty);
+      const scaledProtein  = scaleValue(food.protein,  food.qty, displayQty);
+      const scaledCalories = scaleValue(food.calories, food.qty, displayQty);
+
+      const tr = document.createElement("tr");
+      if (isSelected) tr.classList.add("selected");
+      tr.dataset.key = key;
+
+      tr.innerHTML = `
+        <td style="text-align:center">
+          <input type="checkbox" class="row-checkbox" aria-label="Select ${food.item}"
+            ${isSelected ? "checked" : ""} />
+        </td>
+        <td class="item-name">${food.item}</td>
+        <td><span class="badge ${badgeClass(food.category)}">${food.category}</span></td>
+        <td class="num-cell" data-field="fats">${fmt(scaledFats)}</td>
+        <td class="num-cell" data-field="carbs">${fmt(scaledCarbs)}</td>
+        <td class="num-cell" data-field="protein">${fmt(scaledProtein)}</td>
+        <td class="num-cell" data-field="calories">${fmt(scaledCalories)}</td>
+        <td>
+          <div class="qty-wrap ${!isSelected ? "qty-disabled" : ""}">
+            <button class="qty-btn qty-dec" ${!isSelected ? "disabled" : ""} aria-label="Decrease quantity">−</button>
+            <input type="text" class="qty-input" placeholder="${food.qty || 'e.g. 100g'}"
+              value="${qty}" ${!isSelected ? "disabled" : ""}
+              aria-label="Quantity for ${food.item}" />
+            <button class="qty-btn qty-inc" ${!isSelected ? "disabled" : ""} aria-label="Increase quantity">+</button>
+          </div>
+        </td>
+      `;
+
+      tr.querySelector(".row-checkbox").addEventListener("change", e => {
+        toggleRow(key, food, e.target.checked, tr);
+      });
+
+      function applyQty(newQty) {
+        if (!selected.has(key)) return;
+        selected.get(key).qty = newQty;
+        const effectiveQty = newQty || food.qty;
+        tr.querySelector('[data-field="fats"]').textContent     = fmt(scaleValue(food.fats,     food.qty, effectiveQty));
+        tr.querySelector('[data-field="carbs"]').textContent    = fmt(scaleValue(food.carbs,    food.qty, effectiveQty));
+        tr.querySelector('[data-field="protein"]').textContent  = fmt(scaleValue(food.protein,  food.qty, effectiveQty));
+        tr.querySelector('[data-field="calories"]').textContent = fmt(scaleValue(food.calories, food.qty, effectiveQty));
+        updateSummary();
+      }
+
+      tr.querySelector(".qty-input").addEventListener("input", e => applyQty(e.target.value));
+
+      tr.querySelector(".qty-inc").addEventListener("click", () => {
+        if (!selected.has(key)) return;
+        const input  = tr.querySelector(".qty-input");
+        const parsed = parseQtyStr(input.value || food.qty);
+        const newQty = (parsed.num + parsed.step) + parsed.unit;
+        input.value  = newQty;
+        applyQty(newQty);
+      });
+
+      tr.querySelector(".qty-dec").addEventListener("click", () => {
+        if (!selected.has(key)) return;
+        const input  = tr.querySelector(".qty-input");
+        const parsed = parseQtyStr(input.value || food.qty);
+        const newQty = Math.max(0, parsed.num - parsed.step) + parsed.unit;
+        input.value  = newQty;
+        applyQty(newQty);
+      });
+
+      fragment.appendChild(tr);
+    });
   });
 
   tbody.appendChild(fragment);
@@ -345,18 +423,28 @@ btnExport.addEventListener("click", () => {
   // Column headers
   rows.push(["Item", "Qty", "Category", "Fats (g)", "Carbs (g)", "Protein (g)", "Calories (kcal)"]);
 
-  // Food data rows
+  // Food data rows — grouped by meal
+  const mealGroups = { Breakfast:[], Lunch:[], Snacks:[], Dinner:[] };
   selected.forEach(({ food, qty }) => {
-    const effectiveQty = qty || food.qty;
-    rows.push([
-      food.item,
-      effectiveQty,
-      food.category,
-      fmt(scaleValue(food.fats,     food.qty, effectiveQty)),
-      fmt(scaleValue(food.carbs,    food.qty, effectiveQty)),
-      fmt(scaleValue(food.protein,  food.qty, effectiveQty)),
-      Math.round(scaleValue(food.calories, food.qty, effectiveQty)),
-    ]);
+    const eq = qty || food.qty;
+    const row = [
+      food.item, eq, food.category,
+      fmt(scaleValue(food.fats,     food.qty, eq)),
+      fmt(scaleValue(food.carbs,    food.qty, eq)),
+      fmt(scaleValue(food.protein,  food.qty, eq)),
+      Math.round(scaleValue(food.calories, food.qty, eq)),
+    ];
+    const m = food.meal || "Lunch";
+    if (mealGroups[m]) mealGroups[m].push(row);
+    else mealGroups["Lunch"].push(row);
+  });
+
+  ["Breakfast","Lunch","Snacks","Dinner"].forEach(meal => {
+    if (mealGroups[meal].length === 0) return;
+    rows.push([`— ${meal.toUpperCase()} —`]);
+    rows.push(["Item","Qty","Category","Fats (g)","Carbs (g)","Protein (g)","Calories (kcal)"]);
+    mealGroups[meal].forEach(r => rows.push(r));
+    rows.push([]);
   });
 
   // Totals row
@@ -435,6 +523,7 @@ addFoodForm.addEventListener("submit", async e => {
   const fields = {
     item:     document.getElementById("f-item"),
     qty:      document.getElementById("f-qty"),
+    meal:     document.getElementById("f-meal"),
     category: document.getElementById("f-category"),
     fats:     document.getElementById("f-fats"),
     carbs:    document.getElementById("f-carbs"),
@@ -457,6 +546,7 @@ addFoodForm.addEventListener("submit", async e => {
   const payload = {
     item:     fields.item.value.trim(),
     qty:      fields.qty.value.trim(),
+    meal:     fields.meal.value,
     category: fields.category.value,
     fats:     parseFloat(fields.fats.value),
     carbs:    parseFloat(fields.carbs.value),
@@ -508,6 +598,38 @@ function showToast(msg, type = "") {
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 3000);
 }
+
+// ─── Diet Log Sheet export ────────────────────────────────────
+document.getElementById("btn-diet-log").addEventListener("click", e => {
+  e.preventDefault();
+
+  // Save patient meta
+  const meta = {
+    name:  document.getElementById("p-name").value.trim(),
+    age:   document.getElementById("p-age").value.trim(),
+    phone: document.getElementById("p-phone").value.trim(),
+  };
+  localStorage.setItem("diet_patient_meta", JSON.stringify(meta));
+
+  // Save selected items with scaled nutrition
+  const items = [];
+  selected.forEach(({ food, qty }) => {
+    const eq = qty || food.qty;
+    items.push({
+      item:     food.item,
+      meal:     food.meal || "Lunch",
+      qty:      eq,
+      category: food.category,
+      fats:     scaleValue(food.fats,     food.qty, eq),
+      carbs:    scaleValue(food.carbs,    food.qty, eq),
+      protein:  scaleValue(food.protein,  food.qty, eq),
+      calories: scaleValue(food.calories, food.qty, eq),
+    });
+  });
+  localStorage.setItem("diet_log_export", JSON.stringify(items));
+
+  window.location.href = "/diet-log.html";
+});
 
 // ─── Patient History ──────────────────────────────────────────
 

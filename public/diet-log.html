@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Patient Diet Log Sheet</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, 'Segoe UI', sans-serif;
+      background: #e8edf2;
+      padding: 1.5rem;
+      font-size: 13px;
+      color: #111;
+    }
+
+    /* ── Action bar ─────────────────────────────────────────── */
+    .action-bar {
+      display: flex;
+      gap: .6rem;
+      justify-content: flex-end;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: .45rem 1.1rem;
+      border-radius: 6px;
+      font-size: .82rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all .15s;
+    }
+    .btn-back   { background: #2563eb; color: #fff; }
+    .btn-back:hover { background: #1d4ed8; }
+    .btn-print  { background: #1a1a2e; color: #fff; }
+    .btn-print:hover { background: #2d2d4e; }
+    .btn-reset  { background: #f0f0f0; color: #333; border: 1px solid #ccc; }
+    .btn-reset:hover { background: #e0e0e0; }
+
+    /* ── Sheet ──────────────────────────────────────────────── */
+    .sheet {
+      background: #fff;
+      max-width: 960px;
+      margin: 0 auto;
+      border: 2px solid #000;
+      padding: 1.2rem 1.2rem 1.8rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,.15);
+    }
+
+    /* ── Title ──────────────────────────────────────────────── */
+    .sheet-title {
+      text-align: center;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid #000;
+      padding-bottom: .6rem;
+    }
+    .sheet-title h1 {
+      font-size: 1.1rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+    }
+    .sheet-title p { font-size: .75rem; color: #444; margin-top: .2rem; }
+
+    /* ── Meta fields ────────────────────────────────────────── */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: .5rem .75rem;
+      margin-bottom: 1rem;
+      padding: .7rem .9rem;
+      border: 1px solid #bbb;
+      background: #f9f9f9;
+    }
+    .meta-field {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+    .meta-field label {
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      white-space: nowrap;
+      color: #333;
+    }
+    .meta-field input {
+      border: none;
+      border-bottom: 1.5px solid #555;
+      background: transparent;
+      font-size: .82rem;
+      padding: .15rem .3rem;
+      flex: 1;
+      outline: none;
+      min-width: 0;
+    }
+    .meta-field input:focus { border-bottom-color: #2563eb; }
+
+    /* ── Main table ─────────────────────────────────────────── */
+    .table-scroll { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    th, td {
+      border: 1px solid #000;
+      padding: 5px 6px;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    /* Top header row */
+    .th-top {
+      background: #d0d0d0;
+      font-weight: 800;
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      padding: 7px 6px;
+    }
+
+    /* Visit No cell */
+    .td-visit {
+      background: #e8e8e8;
+      font-weight: 700;
+      font-size: .75rem;
+      min-width: 80px;
+    }
+    .td-visit input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: center;
+      font-size: .82rem;
+      font-weight: 700;
+      outline: none;
+    }
+
+    /* Meal label — vertical text */
+    .td-meal {
+      background: #f0f0f0;
+      font-weight: 800;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(180deg);
+      width: 30px;
+      min-width: 30px;
+      padding: 8px 3px;
+      white-space: nowrap;
+      border-right: 2px solid #000;
+    }
+
+    /* Item / Qty cells */
+    .td-item {
+      text-align: left;
+      padding-left: 8px;
+      min-width: 130px;
+      background: #fff;
+      font-size: .82rem;
+    }
+    .td-item input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      font-size: .82rem;
+      outline: none;
+      text-align: left;
+    }
+
+    .td-qty {
+      min-width: 65px;
+      background: #fff;
+    }
+    .td-qty input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: center;
+      font-size: .82rem;
+      outline: none;
+    }
+
+    /* Nutrition cells */
+    .td-num {
+      min-width: 52px;
+      background: #fff;
+    }
+    .td-num input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: center;
+      font-size: .8rem;
+      outline: none;
+    }
+
+    /* Calories/Family/Others column */
+    .td-cal-family {
+      min-width: 90px;
+      background: #fffbe6;
+      font-size: .78rem;
+    }
+    .td-cal-family input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: center;
+      font-size: .78rem;
+      outline: none;
+    }
+
+    /* Alternate row shading */
+    tr.row-alt .td-item,
+    tr.row-alt .td-qty,
+    tr.row-alt .td-num  { background: #f7f7f7; }
+    tr.row-alt .td-cal-family { background: #fff8e0; }
+
+    /* Total rows */
+    .tr-total td {
+      background: #e4e4e4;
+      font-weight: 700;
+      font-size: .75rem;
+    }
+    .tr-total .td-num { background: #d8d8d8; }
+
+    /* Grand total */
+    .tr-grand td {
+      background: #c8c8c8;
+      font-weight: 800;
+      font-size: .78rem;
+      border-top: 2px solid #000;
+    }
+
+    /* Add row button */
+    .btn-add-row {
+      font-size: .68rem;
+      padding: 2px 7px;
+      border: 1px dashed #888;
+      background: transparent;
+      cursor: pointer;
+      border-radius: 3px;
+      color: #555;
+    }
+    .btn-add-row:hover { background: #e8f0fe; border-color: #2563eb; color: #2563eb; }
+
+    /* Notes section */
+    .notes-section {
+      margin-top: 1.2rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr 2fr;
+      gap: .75rem;
+      border-top: 1.5px solid #000;
+      padding-top: .9rem;
+    }
+    .notes-field { display: flex; flex-direction: column; gap: .3rem; }
+    .notes-field label {
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: #333;
+    }
+    .notes-field input, .notes-field textarea {
+      border: none;
+      border-bottom: 1.5px solid #555;
+      background: transparent;
+      font-size: .82rem;
+      padding: .2rem .3rem;
+      outline: none;
+      resize: none;
+      font-family: inherit;
+    }
+
+    /* ── Print ──────────────────────────────────────────────── */
+    @media print {
+      body { background: #fff; padding: 0; font-size: 11px; }
+      .sheet { box-shadow: none; border: 2px solid #000; padding: .8rem; max-width: 100%; }
+      .action-bar { display: none; }
+      .btn-add-row { display: none; }
+      @page { size: A4 portrait; margin: 1cm; }
+    }
+
+    @media (max-width: 600px) {
+      body { padding: .4rem; }
+      .meta-grid { grid-template-columns: 1fr 1fr; }
+      .td-meal { writing-mode: horizontal-tb; transform: none; width: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="action-bar">
+    <button class="btn btn-back"  onclick="window.location='/'">← Back to App</button>
+    <button class="btn btn-reset" onclick="resetSheet()">↺ Reset</button>
+    <button class="btn btn-print" onclick="window.print()">🖨 Print / Save PDF</button>
+  </div>
+
+  <div class="sheet" id="sheet">
+
+    <div class="sheet-title">
+      <h1>Patient Diet Log Sheet</h1>
+      <p>Clinical Nutrition Tracking — Medical Diet Selection System</p>
+    </div>
+
+    <!-- Meta -->
+    <div class="meta-grid">
+      <div class="meta-field">
+        <label>Visit No.</label>
+        <input type="text" id="meta-visit" placeholder="e.g. 03" />
+      </div>
+      <div class="meta-field">
+        <label>Site No.</label>
+        <input type="text" id="meta-site" placeholder="e.g. SITE-001" />
+      </div>
+      <div class="meta-field">
+        <label>Subject Initials</label>
+        <input type="text" id="meta-initials" placeholder="e.g. R.K." maxlength="10" />
+      </div>
+      <div class="meta-field">
+        <label>Date</label>
+        <input type="date" id="meta-date" />
+      </div>
+      <div class="meta-field" style="grid-column:span 2">
+        <label>Patient Name</label>
+        <input type="text" id="meta-name" placeholder="Full name" />
+      </div>
+      <div class="meta-field">
+        <label>Age</label>
+        <input type="number" id="meta-age" placeholder="Years" min="0" max="150" />
+      </div>
+      <div class="meta-field">
+        <label>Phone</label>
+        <input type="tel" id="meta-phone" placeholder="Contact number" />
+      </div>
+    </div>
+
+    <!-- Diet Table -->
+    <div class="table-scroll">
+      <table id="diet-table">
+        <thead>
+          <tr>
+            <th class="th-top" colspan="2">Visit No. / Meal</th>
+            <th class="th-top">Item</th>
+            <th class="th-top">Qty</th>
+            <th class="th-top">Fats (g)</th>
+            <th class="th-top">Carbs (g)</th>
+            <th class="th-top">Protein (g)</th>
+            <th class="th-top">Calories (kcal)</th>
+            <th class="th-top" style="background:#e8e0b0">Calories / Family / Others</th>
+          </tr>
+        </thead>
+        <tbody id="diet-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Notes -->
+    <div class="notes-section">
+      <div class="notes-field">
+        <label>Dietitian / Doctor</label>
+        <input type="text" placeholder="Name" />
+      </div>
+      <div class="notes-field">
+        <label>Signature</label>
+        <input type="text" placeholder="________________" />
+      </div>
+      <div class="notes-field">
+        <label>Remarks / Dietary Notes</label>
+        <textarea rows="2" placeholder="Allergies, restrictions, special instructions..."></textarea>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ── Meal config ───────────────────────────────────────────
+    const MEALS = [
+      { id: "Breakfast",  label: "Breakfast",                    minRows: 3 },
+      { id: "msnack",     label: "Snack/Tuition/Coffee & Teatime", minRows: 2 },
+      { id: "Lunch",      label: "Lunch",                        minRows: 4 },
+      { id: "esnack",     label: "Snack/Tuition/Coffee & Teatime", minRows: 2 },
+      { id: "Dinner",     label: "Dinner",                       minRows: 3 },
+    ];
+
+    // Extra rows added by user
+    const extraRows = {};
+    MEALS.forEach(m => { extraRows[m.id] = 0; });
+
+    // ── Load selected items from localStorage (set by main app) ─
+    function getSelectedItems() {
+      try {
+        const raw = localStorage.getItem("diet_log_export");
+        return raw ? JSON.parse(raw) : null;
+      } catch { return null; }
+    }
+
+    // Group selected items by meal
+    function groupByMeal(items) {
+      const groups = {};
+      MEALS.forEach(m => { groups[m.id] = []; });
+      if (!items) return groups;
+      items.forEach(item => {
+        const meal = item.meal || "Lunch";
+        // Map Snacks to msnack (morning) by default
+        const key = meal === "Snacks" ? "msnack" : meal;
+        if (groups[key]) groups[key].push(item);
+        else groups["Lunch"].push(item);
+      });
+      return groups;
+    }
+
+    // ── Build table ───────────────────────────────────────────
+    function buildTable() {
+      const tbody   = document.getElementById("diet-tbody");
+      tbody.innerHTML = "";
+
+      const selected = getSelectedItems();
+      const groups   = groupByMeal(selected);
+
+      MEALS.forEach(meal => {
+        const preloaded = groups[meal.id] || [];
+        const totalRows = Math.max(meal.minRows, preloaded.length) + extraRows[meal.id];
+
+        for (let i = 0; i < totalRows; i++) {
+          const tr = document.createElement("tr");
+          if (i % 2 !== 0) tr.classList.add("row-alt");
+
+          // Meal label (rowspan on first row only)
+          if (i === 0) {
+            const tdMeal = document.createElement("td");
+            tdMeal.rowSpan = totalRows;
+            tdMeal.className = "td-meal";
+            tdMeal.textContent = meal.label;
+            tr.appendChild(tdMeal);
+          }
+
+          // Visit No. cell (rowspan on first row)
+          if (i === 0) {
+            const tdVisit = document.createElement("td");
+            tdVisit.rowSpan = totalRows;
+            tdVisit.className = "td-visit";
+            tdVisit.innerHTML = `<input type="text" class="visit-sync" placeholder="03" />`;
+            tr.appendChild(tdVisit);
+          }
+
+          const food = preloaded[i] || null;
+
+          // Item
+          const tdItem = document.createElement("td");
+          tdItem.className = "td-item";
+          tdItem.innerHTML = `<input type="text" value="${food ? food.item : ''}" placeholder="Food item" />`;
+          tr.appendChild(tdItem);
+
+          // Qty
+          const tdQty = document.createElement("td");
+          tdQty.className = "td-qty";
+          tdQty.innerHTML = `<input type="text" value="${food ? (food.qty || '') : ''}" placeholder="-" />`;
+          tr.appendChild(tdQty);
+
+          // Fats
+          const tdFats = document.createElement("td");
+          tdFats.className = "td-num";
+          tdFats.innerHTML = `<input type="text" value="${food ? fmtN(food.fats) : ''}" placeholder="-" data-meal="${meal.id}" data-row="${i}" data-col="fats" />`;
+          tr.appendChild(tdFats);
+
+          // Carbs
+          const tdCarbs = document.createElement("td");
+          tdCarbs.className = "td-num";
+          tdCarbs.innerHTML = `<input type="text" value="${food ? fmtN(food.carbs) : ''}" placeholder="-" data-meal="${meal.id}" data-row="${i}" data-col="carbs" />`;
+          tr.appendChild(tdCarbs);
+
+          // Protein
+          const tdProtein = document.createElement("td");
+          tdProtein.className = "td-num";
+          tdProtein.innerHTML = `<input type="text" value="${food ? fmtN(food.protein) : ''}" placeholder="-" data-meal="${meal.id}" data-row="${i}" data-col="protein" />`;
+          tr.appendChild(tdProtein);
+
+          // Calories
+          const tdCal = document.createElement("td");
+          tdCal.className = "td-num";
+          tdCal.innerHTML = `<input type="text" value="${food ? Math.round(food.calories) : ''}" placeholder="-" data-meal="${meal.id}" data-row="${i}" data-col="cal" />`;
+          tr.appendChild(tdCal);
+
+          // Calories / Family / Others
+          const tdFamily = document.createElement("td");
+          tdFamily.className = "td-cal-family";
+          tdFamily.innerHTML = `<input type="text" placeholder="-" />`;
+          tr.appendChild(tdFamily);
+
+          tbody.appendChild(tr);
+        }
+
+        // Meal total row
+        const trTotal = document.createElement("tr");
+        trTotal.className = "tr-total";
+
+        const tdTL = document.createElement("td");
+        tdTL.colSpan = 3;
+        tdTL.style.textAlign = "right";
+        tdTL.style.paddingRight = "8px";
+        tdTL.textContent = `${meal.label} Total`;
+        trTotal.appendChild(tdTL);
+
+        ["fats","carbs","protein","cal"].forEach(field => {
+          const td = document.createElement("td");
+          td.className = "td-num";
+          td.id = `total-${meal.id}-${field}`;
+          td.style.fontWeight = "800";
+          // Pre-calculate from loaded data
+          const sum = (groups[meal.id] || []).reduce((acc, f) => {
+            const v = field === "cal" ? f.calories : f[field];
+            return acc + (parseFloat(v) || 0);
+          }, 0);
+          td.textContent = sum ? fmtN(sum) : "0";
+          trTotal.appendChild(td);
+        });
+
+        const tdFamilyTotal = document.createElement("td");
+        tdFamilyTotal.className = "td-cal-family";
+        trTotal.appendChild(tdFamilyTotal);
+
+        tbody.appendChild(trTotal);
+
+        // Add row button
+        const trAdd = document.createElement("tr");
+        const tdAdd = document.createElement("td");
+        tdAdd.colSpan = 9;
+        tdAdd.style.cssText = "padding:3px 8px;text-align:left;background:#f5f5f5;border-top:none;";
+        tdAdd.innerHTML = `<button class="btn-add-row" onclick="addRow('${meal.id}')">+ Add row</button>`;
+        trAdd.appendChild(tdAdd);
+        tbody.appendChild(trAdd);
+      });
+
+      // Grand total row
+      const trGrand = document.createElement("tr");
+      trGrand.className = "tr-grand";
+
+      const tdGL = document.createElement("td");
+      tdGL.colSpan = 3;
+      tdGL.style.textAlign = "right";
+      tdGL.style.paddingRight = "8px";
+      tdGL.textContent = "DAILY TOTAL";
+      trGrand.appendChild(tdGL);
+
+      ["fats","carbs","protein","cal"].forEach(field => {
+        const td = document.createElement("td");
+        td.id = `grand-${field}`;
+        td.style.fontWeight = "900";
+        trGrand.appendChild(td);
+      });
+
+      const tdGF = document.createElement("td");
+      tdGF.className = "td-cal-family";
+      trGrand.appendChild(tdGF);
+
+      tbody.appendChild(trGrand);
+
+      attachListeners();
+      recalcTotals();
+      syncVisitNo();
+    }
+
+    // ── Sync Visit No. across all meal rows ───────────────────
+    function syncVisitNo() {
+      const val = document.getElementById("meta-visit").value;
+      document.querySelectorAll(".visit-sync").forEach(inp => { inp.value = val; });
+    }
+    document.getElementById("meta-visit").addEventListener("input", syncVisitNo);
+
+    // ── Live recalc ───────────────────────────────────────────
+    function attachListeners() {
+      document.querySelectorAll("input[data-col]").forEach(inp => {
+        inp.addEventListener("input", recalcTotals);
+      });
+    }
+
+    function recalcTotals() {
+      let gFats = 0, gCarbs = 0, gProtein = 0, gCal = 0;
+
+      MEALS.forEach(meal => {
+        let mFats = 0, mCarbs = 0, mProtein = 0, mCal = 0;
+        document.querySelectorAll(`input[data-meal="${meal.id}"]`).forEach(inp => {
+          const v = parseFloat(inp.value) || 0;
+          if (inp.dataset.col === "fats")    mFats    += v;
+          if (inp.dataset.col === "carbs")   mCarbs   += v;
+          if (inp.dataset.col === "protein") mProtein += v;
+          if (inp.dataset.col === "cal")     mCal     += v;
+        });
+        setCell(`total-${meal.id}-fats`,    mFats);
+        setCell(`total-${meal.id}-carbs`,   mCarbs);
+        setCell(`total-${meal.id}-protein`, mProtein);
+        setCell(`total-${meal.id}-cal`,     mCal);
+        gFats += mFats; gCarbs += mCarbs; gProtein += mProtein; gCal += mCal;
+      });
+
+      setCell("grand-fats",    gFats);
+      setCell("grand-carbs",   gCarbs);
+      setCell("grand-protein", gProtein);
+      setCell("grand-cal",     gCal);
+    }
+
+    function setCell(id, val) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = Number.isInteger(val) ? val : parseFloat(val).toFixed(1);
+    }
+
+    function fmtN(n) {
+      const f = parseFloat(n);
+      return isNaN(f) ? "" : (Number.isInteger(f) ? f : f.toFixed(1));
+    }
+
+    // ── Add row ───────────────────────────────────────────────
+    function addRow(mealId) {
+      extraRows[mealId]++;
+      buildTable();
+    }
+
+    // ── Reset ─────────────────────────────────────────────────
+    function resetSheet() {
+      if (!confirm("Reset all data?")) return;
+      MEALS.forEach(m => { extraRows[m.id] = 0; });
+      localStorage.removeItem("diet_log_export");
+      document.querySelectorAll(".sheet input, .sheet textarea").forEach(el => {
+        if (el.type !== "date") el.value = "";
+      });
+      buildTable();
+    }
+
+    // ── Auto-fill patient meta from localStorage ──────────────
+    function loadPatientMeta() {
+      try {
+        const raw = localStorage.getItem("diet_patient_meta");
+        if (!raw) return;
+        const p = JSON.parse(raw);
+        if (p.name)  document.getElementById("meta-name").value  = p.name;
+        if (p.age)   document.getElementById("meta-age").value   = p.age;
+        if (p.phone) document.getElementById("meta-phone").value = p.phone;
+      } catch {}
+    }
+
+    // ── Init ──────────────────────────────────────────────────
+    document.getElementById("meta-date").value = new Date().toISOString().split("T")[0];
+    loadPatientMeta();
+    buildTable();
+  </script>
+</body>
+</html>

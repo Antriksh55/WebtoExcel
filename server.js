@@ -53,15 +53,19 @@ app.get("/api/foods", (req, res) => {
 
 // POST /api/foods
 app.post("/api/foods", (req, res) => {
-  const { item, qty, category, fats, carbs, protein, calories } = req.body;
+  const { item, qty, meal, category, fats, carbs, protein, calories } = req.body;
 
-  if (!item || !qty || !category || fats == null || carbs == null || protein == null || calories == null) {
+  if (!item || !qty || !meal || !category || fats == null || carbs == null || protein == null || calories == null) {
     return res.status(400).json({ error: "All fields are required." });
   }
 
   const validCategories = ["Veg", "Non-Veg", "Beverage", "Dessert"];
+  const validMeals      = ["Breakfast", "Lunch", "Snacks", "Dinner"];
   if (!validCategories.includes(category)) {
     return res.status(400).json({ error: "Invalid category." });
+  }
+  if (!validMeals.includes(meal)) {
+    return res.status(400).json({ error: "Invalid meal section." });
   }
 
   const foods = readFoods();
@@ -74,6 +78,7 @@ app.post("/api/foods", (req, res) => {
   const newFood = {
     item:     item.trim(),
     qty:      qty.trim(),
+    meal,
     category,
     fats:     parseFloat(fats),
     carbs:    parseFloat(carbs),

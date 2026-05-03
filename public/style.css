@@ -1006,3 +1006,103 @@ body {
 .hview-table tr:hover td { background: var(--surface2); }
 .hview-table .td-num { text-align: right; color: var(--text-muted); }
 .hview-totals td { font-weight: 700; color: var(--accent); background: rgba(79,142,247,.06) !important; }
+
+/* ============================================================
+   MEAL TABS
+   ============================================================ */
+.meal-tabs {
+  display: flex;
+  gap: .4rem;
+  flex-wrap: wrap;
+  margin-bottom: .75rem;
+}
+
+.meal-tab {
+  padding: .45rem 1rem;
+  border-radius: 999px;
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+.meal-tab:hover { border-color: var(--accent); color: var(--text); }
+.meal-tab.active {
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(79,142,247,.35);
+}
+
+/* ============================================================
+   MEAL SECTION GROUP ROWS
+   ============================================================ */
+.meal-group-row {
+  background: var(--surface2) !important;
+  border-bottom: 1px solid var(--border) !important;
+  border-left: none !important;
+  cursor: pointer;
+  user-select: none;
+}
+.meal-group-row:hover { background: var(--border) !important; }
+
+.meal-group-cell {
+  padding: .6rem 1rem !important;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+
+.meal-group-label {
+  font-size: .8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--text);
+}
+
+.meal-group-badge {
+  font-size: .7rem;
+  font-weight: 600;
+  padding: .15rem .55rem;
+  border-radius: 999px;
+  margin-left: .25rem;
+}
+.meal-badge-breakfast { background: rgba(245,158,11,.15); color: var(--amber); border: 1px solid rgba(245,158,11,.25); }
+.meal-badge-lunch     { background: rgba(34,197,94,.12);  color: var(--green); border: 1px solid rgba(34,197,94,.2); }
+.meal-badge-snacks    { background: rgba(6,182,212,.12);  color: var(--cyan);  border: 1px solid rgba(6,182,212,.2); }
+.meal-badge-dinner    { background: rgba(168,85,247,.12); color: var(--purple);border: 1px solid rgba(168,85,247,.2); }
+
+.meal-group-chevron {
+  margin-left: auto;
+  font-size: .75rem;
+  color: var(--text-muted);
+  transition: transform var(--transition);
+}
+.meal-group-chevron.collapsed { transform: rotate(-90deg); }
+
+.meal-group-select {
+  font-size: .72rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: none;
+  border: 1px solid rgba(79,142,247,.3);
+  border-radius: 999px;
+  padding: .15rem .55rem;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.meal-group-select:hover { background: var(--accent-glow); }
+
+/* Diet Log link chip */
+.diet-log-link {
+  text-decoration: none;
+  cursor: pointer;
+  transition: box-shadow var(--transition);
+}
+.diet-log-link:hover {
+  box-shadow: 0 0 0 2px rgba(255,255,255,.4);
+}

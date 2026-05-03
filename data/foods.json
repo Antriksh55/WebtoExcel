@@ -6,7 +6,8 @@
     "fats": 10,
     "carbs": 45,
     "protein": 6,
-    "calories": 300
+    "calories": 300,
+    "meal": "Breakfast"
   },
   {
     "item": "Boiled egg",
@@ -15,7 +16,8 @@
     "fats": 5,
     "carbs": 1,
     "protein": 6,
-    "calories": 70
+    "calories": 70,
+    "meal": "Breakfast"
   },
   {
     "item": "Bhatura",
@@ -24,7 +26,8 @@
     "fats": 15,
     "carbs": 50,
     "protein": 7,
-    "calories": 350
+    "calories": 350,
+    "meal": "Breakfast"
   },
   {
     "item": "Chutney",
@@ -33,7 +36,8 @@
     "fats": 2,
     "carbs": 4,
     "protein": 1,
-    "calories": 40
+    "calories": 40,
+    "meal": "Breakfast"
   },
   {
     "item": "Dahi",
@@ -42,7 +46,8 @@
     "fats": 4,
     "carbs": 5,
     "protein": 3,
-    "calories": 60
+    "calories": 60,
+    "meal": "Breakfast"
   },
   {
     "item": "Dosa",
@@ -51,7 +56,8 @@
     "fats": 6,
     "carbs": 40,
     "protein": 5,
-    "calories": 220
+    "calories": 220,
+    "meal": "Breakfast"
   },
   {
     "item": "Idli",
@@ -60,7 +66,8 @@
     "fats": 1,
     "carbs": 30,
     "protein": 4,
-    "calories": 150
+    "calories": 150,
+    "meal": "Breakfast"
   },
   {
     "item": "Jalebi",
@@ -69,7 +76,8 @@
     "fats": 8,
     "carbs": 50,
     "protein": 2,
-    "calories": 250
+    "calories": 250,
+    "meal": "Snacks"
   },
   {
     "item": "Kachori",
@@ -78,7 +86,8 @@
     "fats": 20,
     "carbs": 40,
     "protein": 6,
-    "calories": 350
+    "calories": 350,
+    "meal": "Breakfast"
   },
   {
     "item": "Methi paratha",
@@ -87,7 +96,8 @@
     "fats": 8,
     "carbs": 40,
     "protein": 5,
-    "calories": 250
+    "calories": 250,
+    "meal": "Breakfast"
   },
   {
     "item": "Mix paratha",
@@ -96,7 +106,8 @@
     "fats": 9,
     "carbs": 42,
     "protein": 6,
-    "calories": 270
+    "calories": 270,
+    "meal": "Breakfast"
   },
   {
     "item": "Moong dal chila",
@@ -105,7 +116,8 @@
     "fats": 5,
     "carbs": 20,
     "protein": 8,
-    "calories": 180
+    "calories": 180,
+    "meal": "Breakfast"
   },
   {
     "item": "Paneer paratha",
@@ -114,7 +126,8 @@
     "fats": 12,
     "carbs": 40,
     "protein": 10,
-    "calories": 320
+    "calories": 320,
+    "meal": "Breakfast"
   },
   {
     "item": "Paratha",
@@ -123,7 +136,8 @@
     "fats": 10,
     "carbs": 40,
     "protein": 5,
-    "calories": 280
+    "calories": 280,
+    "meal": "Breakfast"
   },
   {
     "item": "Poha",
@@ -132,7 +146,8 @@
     "fats": 5,
     "carbs": 35,
     "protein": 4,
-    "calories": 200
+    "calories": 200,
+    "meal": "Breakfast"
   },
   {
     "item": "Puri",
@@ -141,7 +156,8 @@
     "fats": 12,
     "carbs": 35,
     "protein": 4,
-    "calories": 250
+    "calories": 250,
+    "meal": "Breakfast"
   },
   {
     "item": "Sambhar",
@@ -150,7 +166,8 @@
     "fats": 3,
     "carbs": 15,
     "protein": 6,
-    "calories": 120
+    "calories": 120,
+    "meal": "Breakfast"
   },
   {
     "item": "Sattu paratha",
@@ -159,7 +176,8 @@
     "fats": 8,
     "carbs": 40,
     "protein": 8,
-    "calories": 280
+    "calories": 280,
+    "meal": "Breakfast"
   },
   {
     "item": "Suji chila",
@@ -168,7 +186,8 @@
     "fats": 6,
     "carbs": 30,
     "protein": 5,
-    "calories": 200
+    "calories": 200,
+    "meal": "Breakfast"
   },
   {
     "item": "Upma",
@@ -177,7 +196,8 @@
     "fats": 7,
     "carbs": 35,
     "protein": 5,
-    "calories": 220
+    "calories": 220,
+    "meal": "Breakfast"
   },
   {
     "item": "Uttapam",
@@ -186,7 +206,8 @@
     "fats": 7,
     "carbs": 40,
     "protein": 6,
-    "calories": 250
+    "calories": 250,
+    "meal": "Breakfast"
   },
   {
     "item": "Almond",
@@ -195,7 +216,8 @@
     "fats": 15,
     "carbs": 7,
     "protein": 6,
-    "calories": 170
+    "calories": 170,
+    "meal": "Snacks"
   },
   {
     "item": "Fried peanuts",
@@ -204,7 +226,8 @@
     "fats": 14,
     "carbs": 5,
     "protein": 7,
-    "calories": 170
+    "calories": 170,
+    "meal": "Snacks"
   },
   {
     "item": "Apple",
@@ -213,7 +236,8 @@
     "fats": 0,
     "carbs": 25,
     "protein": 0,
-    "calories": 95
+    "calories": 95,
+    "meal": "Snacks"
   },
   {
     "item": "Banana",
@@ -222,7 +246,8 @@
     "fats": 0,
     "carbs": 27,
     "protein": 1,
-    "calories": 105
+    "calories": 105,
+    "meal": "Snacks"
   },
   {
     "item": "Milk",
@@ -231,7 +256,8 @@
     "fats": 4,
     "carbs": 5,
     "protein": 3,
-    "calories": 60
+    "calories": 60,
+    "meal": "Breakfast"
   },
   {
     "item": "Mixed seeds",
@@ -240,7 +266,8 @@
     "fats": 13,
     "carbs": 6,
     "protein": 5,
-    "calories": 150
+    "calories": 150,
+    "meal": "Snacks"
   },
   {
     "item": "Roasted makhana",
@@ -249,7 +276,8 @@
     "fats": 0.5,
     "carbs": 23,
     "protein": 3,
-    "calories": 100
+    "calories": 100,
+    "meal": "Snacks"
   },
   {
     "item": "Roasted nuts",
@@ -258,7 +286,8 @@
     "fats": 14,
     "carbs": 6,
     "protein": 5,
-    "calories": 160
+    "calories": 160,
+    "meal": "Snacks"
   },
   {
     "item": "Walnut",
@@ -267,7 +296,8 @@
     "fats": 20,
     "carbs": 4,
     "protein": 4,
-    "calories": 200
+    "calories": 200,
+    "meal": "Snacks"
   },
   {
     "item": "Anaar juice",
@@ -276,7 +306,8 @@
     "fats": 0,
     "carbs": 13,
     "protein": 0,
-    "calories": 54
+    "calories": 54,
+    "meal": "Snacks"
   },
   {
     "item": "Coconut water",
@@ -285,7 +316,8 @@
     "fats": 0,
     "carbs": 9,
     "protein": 0,
-    "calories": 45
+    "calories": 45,
+    "meal": "Snacks"
   },
   {
     "item": "Ganne juice",
@@ -294,7 +326,8 @@
     "fats": 0,
     "carbs": 13,
     "protein": 0,
-    "calories": 60
+    "calories": 60,
+    "meal": "Snacks"
   },
   {
     "item": "Mausambi juice",
@@ -303,7 +336,8 @@
     "fats": 0,
     "carbs": 10,
     "protein": 0,
-    "calories": 45
+    "calories": 45,
+    "meal": "Snacks"
   },
   {
     "item": "Orange juice",
@@ -312,7 +346,8 @@
     "fats": 0,
     "carbs": 11,
     "protein": 1,
-    "calories": 47
+    "calories": 47,
+    "meal": "Snacks"
   },
   {
     "item": "Pineapple juice",
@@ -321,7 +356,8 @@
     "fats": 0,
     "carbs": 13,
     "protein": 0,
-    "calories": 53
+    "calories": 53,
+    "meal": "Snacks"
   },
   {
     "item": "Besan halwa",
@@ -330,7 +366,8 @@
     "fats": 15,
     "carbs": 50,
     "protein": 6,
-    "calories": 350
+    "calories": 350,
+    "meal": "Snacks"
   },
   {
     "item": "Gajar halwa",
@@ -339,7 +376,8 @@
     "fats": 10,
     "carbs": 45,
     "protein": 4,
-    "calories": 300
+    "calories": 300,
+    "meal": "Snacks"
   },
   {
     "item": "Suji halwa",
@@ -348,7 +386,8 @@
     "fats": 12,
     "carbs": 50,
     "protein": 5,
-    "calories": 320
+    "calories": 320,
+    "meal": "Snacks"
   },
   {
     "item": "Aloo pakodi",
@@ -357,7 +396,8 @@
     "fats": 15,
     "carbs": 30,
     "protein": 4,
-    "calories": 280
+    "calories": 280,
+    "meal": "Snacks"
   },
   {
     "item": "Paneer pakodi",
@@ -366,7 +406,8 @@
     "fats": 18,
     "carbs": 20,
     "protein": 10,
-    "calories": 300
+    "calories": 300,
+    "meal": "Snacks"
   },
   {
     "item": "Paneer tikka",
@@ -375,7 +416,8 @@
     "fats": 20,
     "carbs": 10,
     "protein": 15,
-    "calories": 280
+    "calories": 280,
+    "meal": "Snacks"
   },
   {
     "item": "Pyaaz pakodi",
@@ -384,7 +426,8 @@
     "fats": 14,
     "carbs": 28,
     "protein": 4,
-    "calories": 260
+    "calories": 260,
+    "meal": "Snacks"
   },
   {
     "item": "Dalia",
@@ -393,7 +436,8 @@
     "fats": 2,
     "carbs": 35,
     "protein": 5,
-    "calories": 180
+    "calories": 180,
+    "meal": "Lunch"
   },
   {
     "item": "Chawal",
@@ -402,7 +446,8 @@
     "fats": 0,
     "carbs": 45,
     "protein": 4,
-    "calories": 200
+    "calories": 200,
+    "meal": "Lunch"
   },
   {
     "item": "Khichadi",
@@ -411,7 +456,8 @@
     "fats": 5,
     "carbs": 35,
     "protein": 6,
-    "calories": 220
+    "calories": 220,
+    "meal": "Lunch"
   },
   {
     "item": "Kheer",
@@ -420,25 +466,8 @@
     "fats": 8,
     "carbs": 40,
     "protein": 6,
-    "calories": 250
-  },
-  {
-    "item": "Pulao",
-    "qty": "100g",
-    "category": "Veg",
-    "fats": 8,
-    "carbs": 45,
-    "protein": 6,
-    "calories": 280
-  },
-  {
-    "item": "Sewai",
-    "qty": "100g",
-    "category": "Dessert",
-    "fats": 10,
-    "carbs": 50,
-    "protein": 5,
-    "calories": 300
+    "calories": 250,
+    "meal": "Lunch"
   },
   {
     "item": "Bati",
@@ -447,7 +476,8 @@
     "fats": 12,
     "carbs": 40,
     "protein": 6,
-    "calories": 300
+    "calories": 300,
+    "meal": "Lunch"
   },
   {
     "item": "Roti",
@@ -456,7 +486,8 @@
     "fats": 1,
     "carbs": 20,
     "protein": 3,
-    "calories": 100
+    "calories": 100,
+    "meal": "Lunch"
   },
   {
     "item": "Aachar",
@@ -465,7 +496,8 @@
     "fats": 4,
     "carbs": 1,
     "protein": 0,
-    "calories": 50
+    "calories": 50,
+    "meal": "Lunch"
   },
   {
     "item": "Chokha",
@@ -474,7 +506,8 @@
     "fats": 5,
     "carbs": 20,
     "protein": 3,
-    "calories": 150
+    "calories": 150,
+    "meal": "Lunch"
   },
   {
     "item": "Kadhi",
@@ -483,7 +516,8 @@
     "fats": 6,
     "carbs": 15,
     "protein": 5,
-    "calories": 150
+    "calories": 150,
+    "meal": "Lunch"
   },
   {
     "item": "Raita",
@@ -492,7 +526,8 @@
     "fats": 4,
     "carbs": 6,
     "protein": 3,
-    "calories": 70
+    "calories": 70,
+    "meal": "Lunch"
   },
   {
     "item": "Salad",
@@ -501,7 +536,8 @@
     "fats": 0,
     "carbs": 5,
     "protein": 1,
-    "calories": 30
+    "calories": 30,
+    "meal": "Lunch"
   },
   {
     "item": "Aloo chana",
@@ -510,7 +546,8 @@
     "fats": 6,
     "carbs": 18,
     "protein": 4,
-    "calories": 140
+    "calories": 140,
+    "meal": "Lunch"
   },
   {
     "item": "Aloo matar",
@@ -519,7 +556,8 @@
     "fats": 6,
     "carbs": 18,
     "protein": 4,
-    "calories": 140
+    "calories": 140,
+    "meal": "Lunch"
   },
   {
     "item": "Baigan",
@@ -528,7 +566,8 @@
     "fats": 6,
     "carbs": 18,
     "protein": 4,
-    "calories": 140
+    "calories": 140,
+    "meal": "Lunch"
   },
   {
     "item": "Bhindi",
@@ -537,7 +576,8 @@
     "fats": 6,
     "carbs": 18,
     "protein": 4,
-    "calories": 140
+    "calories": 140,
+    "meal": "Lunch"
   },
   {
     "item": "Gobhi",
@@ -546,7 +586,8 @@
     "fats": 6,
     "carbs": 18,
     "protein": 4,
-    "calories": 140
+    "calories": 140,
+    "meal": "Lunch"
   },
   {
     "item": "Kaddu",
@@ -555,7 +596,8 @@
     "fats": 6,
     "carbs": 18,
     "protein": 4,
-    "calories": 140
+    "calories": 140,
+    "meal": "Lunch"
   },
   {
     "item": "Lauki",
@@ -564,7 +606,8 @@
     "fats": 6,
     "carbs": 18,
     "protein": 4,
-    "calories": 140
+    "calories": 140,
+    "meal": "Lunch"
   },
   {
     "item": "Mix veg",
@@ -573,7 +616,8 @@
     "fats": 6,
     "carbs": 18,
     "protein": 4,
-    "calories": 140
+    "calories": 140,
+    "meal": "Lunch"
   },
   {
     "item": "Paneer sabji",
@@ -582,7 +626,8 @@
     "fats": 15,
     "carbs": 18,
     "protein": 10,
-    "calories": 250
+    "calories": 250,
+    "meal": "Lunch"
   },
   {
     "item": "Palak paneer",
@@ -591,7 +636,8 @@
     "fats": 15,
     "carbs": 18,
     "protein": 10,
-    "calories": 250
+    "calories": 250,
+    "meal": "Lunch"
   },
   {
     "item": "Matar paneer",
@@ -600,7 +646,8 @@
     "fats": 15,
     "carbs": 18,
     "protein": 10,
-    "calories": 250
+    "calories": 250,
+    "meal": "Lunch"
   },
   {
     "item": "Soyabean sabji",
@@ -609,7 +656,8 @@
     "fats": 6,
     "carbs": 18,
     "protein": 12,
-    "calories": 180
+    "calories": 180,
+    "meal": "Lunch"
   },
   {
     "item": "Chicken curry",
@@ -618,7 +666,8 @@
     "fats": 15,
     "carbs": 5,
     "protein": 20,
-    "calories": 250
+    "calories": 250,
+    "meal": "Lunch"
   },
   {
     "item": "Egg curry",
@@ -627,7 +676,8 @@
     "fats": 12,
     "carbs": 5,
     "protein": 10,
-    "calories": 180
+    "calories": 180,
+    "meal": "Lunch"
   },
   {
     "item": "Moong dal",
@@ -636,7 +686,8 @@
     "fats": 3,
     "carbs": 25,
     "protein": 9,
-    "calories": 160
+    "calories": 160,
+    "meal": "Lunch"
   },
   {
     "item": "Masoor dal",
@@ -645,7 +696,8 @@
     "fats": 3,
     "carbs": 25,
     "protein": 9,
-    "calories": 160
+    "calories": 160,
+    "meal": "Lunch"
   },
   {
     "item": "Chana dal",
@@ -654,7 +706,8 @@
     "fats": 3,
     "carbs": 25,
     "protein": 9,
-    "calories": 160
+    "calories": 160,
+    "meal": "Lunch"
   },
   {
     "item": "Toor dal",
@@ -663,7 +716,8 @@
     "fats": 3,
     "carbs": 25,
     "protein": 9,
-    "calories": 160
+    "calories": 160,
+    "meal": "Lunch"
   },
   {
     "item": "Urad dal",
@@ -672,6 +726,277 @@
     "fats": 3,
     "carbs": 25,
     "protein": 9,
-    "calories": 160
+    "calories": 160,
+    "meal": "Lunch"
+  },
+  {
+    "item": "Dalia",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 2,
+    "carbs": 35,
+    "protein": 5,
+    "calories": 180,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Chawal",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 0,
+    "carbs": 45,
+    "protein": 4,
+    "calories": 200,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Khichadi",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 5,
+    "carbs": 35,
+    "protein": 6,
+    "calories": 220,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Pulao",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 8,
+    "carbs": 45,
+    "protein": 6,
+    "calories": 280,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Roti",
+    "qty": "1 pc",
+    "category": "Veg",
+    "fats": 1,
+    "carbs": 20,
+    "protein": 3,
+    "calories": 100,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Kadhi",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 6,
+    "carbs": 15,
+    "protein": 5,
+    "calories": 150,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Raita",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 4,
+    "carbs": 6,
+    "protein": 3,
+    "calories": 70,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Salad",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 0,
+    "carbs": 5,
+    "protein": 1,
+    "calories": 30,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Aloo chana",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 6,
+    "carbs": 18,
+    "protein": 4,
+    "calories": 140,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Aloo matar",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 6,
+    "carbs": 18,
+    "protein": 4,
+    "calories": 140,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Baigan",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 6,
+    "carbs": 18,
+    "protein": 4,
+    "calories": 140,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Bhindi",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 6,
+    "carbs": 18,
+    "protein": 4,
+    "calories": 140,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Gobhi",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 6,
+    "carbs": 18,
+    "protein": 4,
+    "calories": 140,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Kaddu",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 6,
+    "carbs": 18,
+    "protein": 4,
+    "calories": 140,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Lauki",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 6,
+    "carbs": 18,
+    "protein": 4,
+    "calories": 140,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Mix veg",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 6,
+    "carbs": 18,
+    "protein": 4,
+    "calories": 140,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Paneer sabji",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 15,
+    "carbs": 18,
+    "protein": 10,
+    "calories": 250,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Palak paneer",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 15,
+    "carbs": 18,
+    "protein": 10,
+    "calories": 250,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Matar paneer",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 15,
+    "carbs": 18,
+    "protein": 10,
+    "calories": 250,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Soyabean sabji",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 6,
+    "carbs": 18,
+    "protein": 12,
+    "calories": 180,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Chicken curry",
+    "qty": "100g",
+    "category": "Non-Veg",
+    "fats": 15,
+    "carbs": 5,
+    "protein": 20,
+    "calories": 250,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Egg curry",
+    "qty": "100g",
+    "category": "Non-Veg",
+    "fats": 12,
+    "carbs": 5,
+    "protein": 10,
+    "calories": 180,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Moong dal",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 3,
+    "carbs": 25,
+    "protein": 9,
+    "calories": 160,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Masoor dal",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 3,
+    "carbs": 25,
+    "protein": 9,
+    "calories": 160,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Chana dal",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 3,
+    "carbs": 25,
+    "protein": 9,
+    "calories": 160,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Toor dal",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 3,
+    "carbs": 25,
+    "protein": 9,
+    "calories": 160,
+    "meal": "Dinner"
+  },
+  {
+    "item": "Urad dal",
+    "qty": "100g",
+    "category": "Veg",
+    "fats": 3,
+    "carbs": 25,
+    "protein": 9,
+    "calories": 160,
+    "meal": "Dinner"
   }
 ]
