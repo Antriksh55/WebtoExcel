@@ -320,8 +320,32 @@ btnExport.addEventListener("click", () => {
     return;
   }
 
-  const rows = [["Item", "Qty", "Category", "Fats (g)", "Carbs (g)", "Protein (g)", "Calories (kcal)"]];
+  // ── Patient details ──────────────────────────────────────
+  const patientName    = document.getElementById("p-name").value.trim();
+  const patientAge     = document.getElementById("p-age").value.trim();
+  const patientPhone   = document.getElementById("p-phone").value.trim();
+  const patientAddress = document.getElementById("p-address").value.trim();
+  const reportDate     = new Date().toLocaleDateString("en-IN", {
+    day: "2-digit", month: "long", year: "numeric"
+  });
 
+  // ── Build rows ───────────────────────────────────────────
+  const rows = [];
+
+  // Patient info header block
+  rows.push(["MEDICAL DIET REPORT"]);
+  rows.push([]);
+  rows.push(["Patient Name",  patientName  || "—"]);
+  rows.push(["Age",           patientAge   ? `${patientAge} years` : "—"]);
+  rows.push(["Phone Number",  patientPhone || "—"]);
+  rows.push(["Address",       patientAddress || "—"]);
+  rows.push(["Report Date",   reportDate]);
+  rows.push([]); // blank separator row
+
+  // Column headers
+  rows.push(["Item", "Qty", "Category", "Fats (g)", "Carbs (g)", "Protein (g)", "Calories (kcal)"]);
+
+  // Food data rows
   selected.forEach(({ food, qty }) => {
     const effectiveQty = qty || food.qty;
     rows.push([
@@ -335,14 +359,36 @@ btnExport.addEventListener("click", () => {
     ]);
   });
 
+  // Totals row
+  let tFats = 0, tCarbs = 0, tProtein = 0, tCal = 0;
+  selected.forEach(({ food, qty }) => {
+    const eq = qty || food.qty;
+    tFats    += scaleValue(food.fats,     food.qty, eq);
+    tCarbs   += scaleValue(food.carbs,    food.qty, eq);
+    tProtein += scaleValue(food.protein,  food.qty, eq);
+    tCal     += scaleValue(food.calories, food.qty, eq);
+  });
+  rows.push([]);
+  rows.push(["TOTAL", "", "", fmt(tFats), fmt(tCarbs), fmt(tProtein), Math.round(tCal)]);
+
+  // ── Build worksheet ──────────────────────────────────────
   const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws["!cols"] = [{ wch: 22 }, { wch: 12 }, { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 16 }];
+
+  // Column widths
+  ws["!cols"] = [
+    { wch: 24 }, { wch: 12 }, { wch: 12 },
+    { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 16 },
+  ];
+
+  // Merge title cell A1 across columns
+  ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
 
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Diet Selection");
+  XLSX.utils.book_append_sheet(wb, ws, "Diet Report");
 
   const today = new Date().toISOString().slice(0, 10);
-  XLSX.writeFile(wb, `diet-selection-${today}.xlsx`);
+  const safeName = patientName ? patientName.replace(/\s+/g, "_") : "patient";
+  XLSX.writeFile(wb, `diet-report-${safeName}-${today}.xlsx`);
 });
 
 // ─── Add Food Modal ───────────────────────────────────────────
@@ -463,6 +509,280 @@ function showToast(msg, type = "") {
   setTimeout(() => toast.remove(), 3000);
 }
 
+// ─── Patient History ──────────────────────────────────────────
+
+const HISTORY_KEY = "diet_patient_history";
+
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveHistory(records) {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(records));
+}
+
+function renderHistory(filter = "") {
+  const records  = loadHistory();
+  const list     = document.getElementById("history-list");
+  const empty    = document.getElementById("history-empty");
+  const countEl  = document.getElementById("history-count");
+
+  const query = filter.trim().toLowerCase();
+  const filtered = query
+    ? records.filter(r =>
+        r.patient.name.toLowerCase().includes(query) ||
+        r.patient.phone.toLowerCase().includes(query))
+    : records;
+
+  countEl.textContent = `${records.length} record${records.length !== 1 ? "s" : ""}`;
+
+  // Remove existing cards (keep empty state node)
+  list.querySelectorAll(".history-card").forEach(c => c.remove());
+
+  if (filtered.length === 0) {
+    empty.classList.remove("hidden");
+    return;
+  }
+  empty.classList.add("hidden");
+
+  // Render newest first
+  [...filtered].reverse().forEach(record => {
+    const card = document.createElement("div");
+    card.className = "history-card";
+    card.dataset.id = record.id;
+
+    card.innerHTML = `
+      <div class="hcard-name">${record.patient.name || "Unnamed Patient"}</div>
+      <div class="hcard-meta">
+        ${record.patient.age   ? `<span>🎂 ${record.patient.age} yrs</span>` : ""}
+        ${record.patient.phone ? `<span>📞 ${record.patient.phone}</span>` : ""}
+        <span>📅 ${new Date(record.date).toLocaleDateString("en-IN", { day:"2-digit", month:"short", year:"numeric" })}</span>
+      </div>
+      <div class="hcard-pills">
+        <span class="hcard-pill fats">${fmt(record.totals.fats)}g Fat</span>
+        <span class="hcard-pill carbs">${fmt(record.totals.carbs)}g Carbs</span>
+        <span class="hcard-pill protein">${fmt(record.totals.protein)}g Protein</span>
+        <span class="hcard-pill cal">${Math.round(record.totals.calories)} kcal</span>
+      </div>
+      <div class="hcard-footer">
+        <span class="hcard-items">${record.items.length} item${record.items.length !== 1 ? "s" : ""} selected</span>
+        <button class="hcard-delete" data-id="${record.id}" title="Delete record" aria-label="Delete record">🗑</button>
+      </div>
+    `;
+
+    // Open detail view on card click (not delete btn)
+    card.addEventListener("click", e => {
+      if (e.target.closest(".hcard-delete")) return;
+      openHistoryModal(record);
+    });
+
+    // Delete button
+    card.querySelector(".hcard-delete").addEventListener("click", e => {
+      e.stopPropagation();
+      deleteHistoryRecord(record.id);
+    });
+
+    list.appendChild(card);
+  });
+}
+
+function deleteHistoryRecord(id) {
+  const records = loadHistory().filter(r => r.id !== id);
+  saveHistory(records);
+  renderHistory(document.getElementById("history-search").value);
+}
+
+// Save current form + selection to history
+document.getElementById("btn-save-history").addEventListener("click", () => {
+  if (selected.size === 0) {
+    alert("Please select at least one food item before saving.");
+    return;
+  }
+
+  const patientName    = document.getElementById("p-name").value.trim();
+  const patientAge     = document.getElementById("p-age").value.trim();
+  const patientPhone   = document.getElementById("p-phone").value.trim();
+  const patientAddress = document.getElementById("p-address").value.trim();
+
+  if (!patientName) {
+    alert("Please enter the patient name before saving.");
+    document.getElementById("p-name").focus();
+    return;
+  }
+
+  let tFats = 0, tCarbs = 0, tProtein = 0, tCal = 0;
+  const items = [];
+
+  selected.forEach(({ food, qty }) => {
+    const eq = qty || food.qty;
+    const sf = scaleValue(food.fats,     food.qty, eq);
+    const sc = scaleValue(food.carbs,    food.qty, eq);
+    const sp = scaleValue(food.protein,  food.qty, eq);
+    const sk = scaleValue(food.calories, food.qty, eq);
+    tFats    += sf; tCarbs += sc; tProtein += sp; tCal += sk;
+    items.push({ item: food.item, qty: eq, category: food.category,
+      fats: sf, carbs: sc, protein: sp, calories: sk });
+  });
+
+  const record = {
+    id:      Date.now().toString(),
+    date:    new Date().toISOString(),
+    patient: { name: patientName, age: patientAge, phone: patientPhone, address: patientAddress },
+    totals:  { fats: tFats, carbs: tCarbs, protein: tProtein, calories: tCal },
+    items,
+  };
+
+  const records = loadHistory();
+  records.push(record);
+  saveHistory(records);
+  renderHistory(document.getElementById("history-search").value);
+  showToast(`✅ Report saved for ${patientName}`, "success");
+});
+
+// History search
+document.getElementById("history-search").addEventListener("input", e => {
+  renderHistory(e.target.value);
+});
+
+// Clear all history
+document.getElementById("btn-clear-history").addEventListener("click", () => {
+  if (!confirm("Delete all patient history records? This cannot be undone.")) return;
+  saveHistory([]);
+  renderHistory();
+});
+
+// ── History View Modal ────────────────────────────────────────
+
+let activeHistoryRecord = null;
+
+function openHistoryModal(record) {
+  activeHistoryRecord = record;
+  const body = document.getElementById("history-modal-body");
+
+  const p = record.patient;
+  body.innerHTML = `
+    <div class="hview-patient">
+      <div class="hview-patient-row">
+        <span class="hview-label">Patient Name</span>
+        <span class="hview-value">${p.name || "—"}</span>
+      </div>
+      <div class="hview-patient-row">
+        <span class="hview-label">Age</span>
+        <span class="hview-value">${p.age ? p.age + " years" : "—"}</span>
+      </div>
+      <div class="hview-patient-row">
+        <span class="hview-label">Phone</span>
+        <span class="hview-value">${p.phone || "—"}</span>
+      </div>
+      <div class="hview-patient-row">
+        <span class="hview-label">Date</span>
+        <span class="hview-value">${new Date(record.date).toLocaleDateString("en-IN", { day:"2-digit", month:"long", year:"numeric" })}</span>
+      </div>
+      <div class="hview-patient-row full">
+        <span class="hview-label">Address</span>
+        <span class="hview-value">${p.address || "—"}</span>
+      </div>
+    </div>
+
+    <table class="hview-table">
+      <thead>
+        <tr>
+          <th>Item</th><th>Qty</th><th>Category</th>
+          <th style="text-align:right">Fats (g)</th>
+          <th style="text-align:right">Carbs (g)</th>
+          <th style="text-align:right">Protein (g)</th>
+          <th style="text-align:right">Calories</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${record.items.map(i => `
+          <tr>
+            <td>${i.item}</td>
+            <td>${i.qty}</td>
+            <td>${i.category}</td>
+            <td class="td-num">${fmt(i.fats)}</td>
+            <td class="td-num">${fmt(i.carbs)}</td>
+            <td class="td-num">${fmt(i.protein)}</td>
+            <td class="td-num">${Math.round(i.calories)}</td>
+          </tr>`).join("")}
+        <tr class="hview-totals">
+          <td colspan="3">TOTAL</td>
+          <td class="td-num">${fmt(record.totals.fats)}</td>
+          <td class="td-num">${fmt(record.totals.carbs)}</td>
+          <td class="td-num">${fmt(record.totals.protein)}</td>
+          <td class="td-num">${Math.round(record.totals.calories)}</td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+
+  document.getElementById("history-modal-overlay").classList.remove("hidden");
+}
+
+function closeHistoryModal() {
+  document.getElementById("history-modal-overlay").classList.add("hidden");
+  activeHistoryRecord = null;
+}
+
+document.getElementById("history-modal-close").addEventListener("click",  closeHistoryModal);
+document.getElementById("history-modal-cancel").addEventListener("click", closeHistoryModal);
+document.getElementById("history-modal-overlay").addEventListener("click", e => {
+  if (e.target === document.getElementById("history-modal-overlay")) closeHistoryModal();
+});
+
+// Load into form
+document.getElementById("history-modal-reload").addEventListener("click", () => {
+  if (!activeHistoryRecord) return;
+  const p = activeHistoryRecord.patient;
+  document.getElementById("p-name").value    = p.name    || "";
+  document.getElementById("p-age").value     = p.age     || "";
+  document.getElementById("p-phone").value   = p.phone   || "";
+  document.getElementById("p-address").value = p.address || "";
+
+  // Restore selections
+  selected.clear();
+  activeHistoryRecord.items.forEach(i => {
+    const match = FOOD_DB.find(f => f.item.toLowerCase() === i.item.toLowerCase());
+    if (match) selected.set(normalise(match.item), { food: match, qty: i.qty });
+  });
+
+  closeHistoryModal();
+  renderTable();
+  showToast(`↩ Loaded report for ${p.name}`, "success");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+// Export from history modal
+document.getElementById("history-modal-export").addEventListener("click", () => {
+  if (!activeHistoryRecord) return;
+  const r = activeHistoryRecord;
+  const p = r.patient;
+
+  const rows = [];
+  rows.push(["MEDICAL DIET REPORT"]);
+  rows.push([]);
+  rows.push(["Patient Name", p.name  || "—"]);
+  rows.push(["Age",          p.age   ? p.age + " years" : "—"]);
+  rows.push(["Phone Number", p.phone || "—"]);
+  rows.push(["Address",      p.address || "—"]);
+  rows.push(["Report Date",  new Date(r.date).toLocaleDateString("en-IN", { day:"2-digit", month:"long", year:"numeric" })]);
+  rows.push([]);
+  rows.push(["Item","Qty","Category","Fats (g)","Carbs (g)","Protein (g)","Calories (kcal)"]);
+  r.items.forEach(i => rows.push([i.item, i.qty, i.category, fmt(i.fats), fmt(i.carbs), fmt(i.protein), Math.round(i.calories)]));
+  rows.push([]);
+  rows.push(["TOTAL","","", fmt(r.totals.fats), fmt(r.totals.carbs), fmt(r.totals.protein), Math.round(r.totals.calories)]);
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws["!cols"] = [{ wch:24 },{ wch:12 },{ wch:12 },{ wch:10 },{ wch:10 },{ wch:12 },{ wch:16 }];
+  ws["!merges"] = [{ s:{ r:0,c:0 }, e:{ r:0,c:6 } }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Diet Report");
+  const safeName = (p.name || "patient").replace(/\s+/g, "_");
+  const date = new Date(r.date).toISOString().slice(0,10);
+  XLSX.writeFile(wb, `diet-report-${safeName}-${date}.xlsx`);
+});
+
 // ─── Init: fetch food data from backend API ───────────────────
 
 async function init() {
@@ -485,6 +805,7 @@ async function init() {
     }
 
     renderTable();
+    renderHistory();
   } catch (err) {
     console.error("Failed to load food data:", err);
     tbody.innerHTML = `
