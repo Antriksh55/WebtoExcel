@@ -651,7 +651,8 @@
       const visitNo = document.getElementById("meta-visit").value || "";
       const date    = document.getElementById("meta-date").value  || new Date().toISOString().slice(0,10);
 
-      const aoa = [];
+      const aoa    = [];
+      const merges = [];
       aoa.push(["Meal", "Visit No.", "Item", "Qty", "Fats (g)", "Carbs (g)", "Protein (g)", "Calories (kcal)"]);
 
       let grandFats = 0, grandCarbs = 0, grandProtein = 0, grandCal = 0;
@@ -681,10 +682,11 @@
 
         if (itemData.length === 0) return;
 
-        const lastIdx = itemData.length - 1;
+        const startRow = aoa.length;
+        const lastIdx  = itemData.length - 1;
 
         itemData.forEach((d, i) => {
-          // Meal label on the LAST row of the group
+          // Meal label on last row
           aoa.push([
             i === lastIdx ? meal.label : "",
             i === lastIdx ? visitNo   : "",
@@ -697,15 +699,21 @@
           grandCal     += d._cal;
         });
 
+        // Merge Meal col and Visit No col across all rows of this group
+        if (itemData.length > 1) {
+          merges.push({ s:{r:startRow,c:0}, e:{r:startRow+lastIdx,c:0} });
+          merges.push({ s:{r:startRow,c:1}, e:{r:startRow+lastIdx,c:1} });
+        }
+
         // Blank separator row between meals
         aoa.push(["","","","","","","",""]);
       });
 
-      // Grand total only
       const fmtN = v => v ? (Number.isInteger(v) ? v : parseFloat(v).toFixed(1)) : 0;
       aoa.push(["TOTAL","","","", fmtN(grandFats), fmtN(grandCarbs), fmtN(grandProtein), Math.round(grandCal)]);
 
       const ws = XLSX.utils.aoa_to_sheet(aoa);
+      ws["!merges"] = merges;
       ws["!cols"] = [
         {wch:26},{wch:10},{wch:22},{wch:12},{wch:10},{wch:10},{wch:12},{wch:16}
       ];
