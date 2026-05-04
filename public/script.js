@@ -783,9 +783,10 @@ document.getElementById("btn-export-days").addEventListener("click", () => {
     // Pad date label to 80 chars so it spans the full row width visually
     const dateLabelPadded = dateLabel.padEnd(80, " ");
 
+    // Put date in col 3, merged across cols 3-4 — centered in the row
     const dateRow = aoa.length;
-    aoa.push([dateLabelPadded, "", "", "", "", "", ""]);
-    merges.push({ s:{r:dateRow,c:0}, e:{r:dateRow,c:6} });
+    aoa.push(["", "", "", dateLabelPadded, "", "", ""]);
+    merges.push({ s:{r:dateRow,c:3}, e:{r:dateRow,c:4} });
     aoa.push(["Meal", "Item", "Qty", "Fats (g)", "Carbs (g)", "Protein (g)", "Calories (kcal)"]);
 
     const groups = {};
