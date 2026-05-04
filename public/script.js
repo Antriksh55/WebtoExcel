@@ -780,8 +780,11 @@ document.getElementById("btn-export-days").addEventListener("click", () => {
       weekday:"long", day:"2-digit", month:"long", year:"numeric"
     });
 
+    // Pad date label to 80 chars so it spans the full row width visually
+    const dateLabelPadded = dateLabel.padEnd(80, " ");
+
     const dateRow = aoa.length;
-    aoa.push([dateLabel, "", "", "", "", "", ""]);
+    aoa.push([dateLabelPadded, "", "", "", "", "", ""]);
     merges.push({ s:{r:dateRow,c:0}, e:{r:dateRow,c:6} });
     aoa.push(["Meal", "Item", "Qty", "Fats (g)", "Carbs (g)", "Protein (g)", "Calories (kcal)"]);
 
