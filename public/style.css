@@ -1106,3 +1106,225 @@ body {
 .diet-log-link:hover {
   box-shadow: 0 0 0 2px rgba(255,255,255,.4);
 }
+
+/* ============================================================
+   DAY PLANNER BAR
+   ============================================================ */
+.day-planner-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: .75rem 1.1rem;
+  margin-top: .75rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.dp-left {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+
+.dp-icon  { font-size: 1.1rem; }
+.dp-label {
+  font-size: .8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+#plan-date {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: .45rem .7rem;
+  font-size: .875rem;
+  background: var(--bg2);
+  color: var(--text);
+  outline: none;
+  transition: border-color var(--transition);
+}
+#plan-date:focus { border-color: var(--accent); }
+
+.dp-right {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  flex-wrap: wrap;
+}
+
+.dp-hint {
+  font-size: .78rem;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.btn-save-day {
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(79,142,247,.3);
+}
+.btn-save-day:hover {
+  background: linear-gradient(135deg, var(--accent-h), #6d28d9);
+  box-shadow: 0 4px 18px rgba(79,142,247,.45);
+}
+
+/* ============================================================
+   DAY PLANS PANEL
+   ============================================================ */
+.day-plans-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-top: .75rem;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.dpp-header {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .8rem 1.1rem;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+
+.dpp-title {
+  font-size: .82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text);
+}
+
+.dpp-count {
+  background: var(--accent-glow);
+  color: var(--accent);
+  border: 1px solid rgba(79,142,247,.3);
+  border-radius: 999px;
+  padding: .15rem .6rem;
+  font-size: .72rem;
+  font-weight: 700;
+}
+
+.dpp-list {
+  padding: .85rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.dpp-list::-webkit-scrollbar { width: 5px; }
+.dpp-list::-webkit-scrollbar-track { background: var(--bg2); }
+.dpp-list::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 999px; }
+
+.dpp-empty {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--text-muted);
+}
+.dpp-empty span { font-size: 2rem; display: block; margin-bottom: .4rem; opacity: .5; }
+.dpp-empty p    { font-size: .875rem; }
+
+/* Day card */
+.day-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.day-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .6rem .9rem;
+  background: linear-gradient(90deg, rgba(79,142,247,.1), transparent);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+}
+
+.day-card-date {
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.day-card-meta {
+  font-size: .75rem;
+  color: var(--text-muted);
+  display: flex;
+  gap: .75rem;
+  align-items: center;
+}
+
+.day-card-actions {
+  display: flex;
+  gap: .4rem;
+  align-items: center;
+}
+
+.btn-day-load {
+  font-size: .72rem;
+  padding: .2rem .55rem;
+  border-radius: 999px;
+  background: var(--accent-glow);
+  color: var(--accent);
+  border: 1px solid rgba(79,142,247,.3);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.btn-day-load:hover { background: rgba(79,142,247,.2); }
+
+.btn-day-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: .85rem;
+  padding: .2rem .35rem;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition), background var(--transition);
+}
+.btn-day-delete:hover { color: var(--red); background: var(--red-bg); }
+
+/* Meal groups inside day card */
+.day-card-body {
+  padding: .6rem .9rem;
+}
+
+.day-meal-group { margin-bottom: .5rem; }
+
+.day-meal-label {
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-muted);
+  margin-bottom: .25rem;
+}
+
+.day-meal-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem;
+}
+
+.day-item-chip {
+  font-size: .75rem;
+  padding: .18rem .55rem;
+  border-radius: 999px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+}

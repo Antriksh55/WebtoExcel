@@ -615,7 +615,205 @@ document.getElementById("btn-diet-log").addEventListener("click", e => {
   window.location.href = "/diet-log.html";
 });
 
-// G��G��G�� Patient History G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��G��
+// ─── Day-wise Planner ─────────────────────────────────────────
+
+const DAY_PLANS_KEY = "diet_day_plans";
+const MEAL_ORDER_DP = ["Breakfast", "Snacks", "Lunch", "Dinner"];
+
+const planDateInput = document.getElementById("plan-date");
+planDateInput.value = new Date().toISOString().slice(0, 10);
+
+function loadDayPlans() {
+  try { return JSON.parse(localStorage.getItem(DAY_PLANS_KEY)) || []; }
+  catch { return []; }
+}
+function saveDayPlans(plans) {
+  localStorage.setItem(DAY_PLANS_KEY, JSON.stringify(plans));
+}
+
+function renderDayPlans() {
+  const plans = loadDayPlans();
+  const list  = document.getElementById("dpp-list");
+  const empty = document.getElementById("dpp-empty");
+  const count = document.getElementById("dpp-count");
+
+  count.textContent = `${plans.length} day${plans.length !== 1 ? "s" : ""}`;
+  list.querySelectorAll(".day-card").forEach(c => c.remove());
+
+  if (plans.length === 0) { empty.classList.remove("hidden"); return; }
+  empty.classList.add("hidden");
+
+  plans.forEach((plan, idx) => {
+    const card = document.createElement("div");
+    card.className = "day-card";
+
+    const dateLabel = new Date(plan.date + "T00:00:00").toLocaleDateString("en-IN", {
+      weekday:"short", day:"2-digit", month:"short", year:"numeric"
+    });
+    const totalCal = Math.round(plan.items.reduce((s, i) => s + (i.calories || 0), 0));
+
+    const groups = {};
+    MEAL_ORDER_DP.forEach(m => { groups[m] = []; });
+    plan.items.forEach(i => {
+      const k = MEAL_ORDER_DP.includes(i.meal) ? i.meal : "Lunch";
+      groups[k].push(i.item);
+    });
+
+    const mealHtml = MEAL_ORDER_DP.map(meal => {
+      if (!groups[meal].length) return "";
+      return `<div class="day-meal-group">
+        <div class="day-meal-label">${meal}</div>
+        <div class="day-meal-items">
+          ${groups[meal].map(n => `<span class="day-item-chip">${n}</span>`).join("")}
+        </div>
+      </div>`;
+    }).join("");
+
+    card.innerHTML = `
+      <div class="day-card-header">
+        <span class="day-card-date">📅 ${dateLabel}</span>
+        <div class="day-card-meta">
+          <span>${plan.items.length} items</span>
+          <span>${totalCal} kcal</span>
+        </div>
+        <div class="day-card-actions">
+          <button class="btn-day-load" data-idx="${idx}">↩ Load</button>
+          <button class="btn-day-delete" data-idx="${idx}" title="Delete">🗑</button>
+        </div>
+      </div>
+      <div class="day-card-body">${mealHtml}</div>
+    `;
+
+    card.querySelector(".btn-day-load").addEventListener("click", () => loadDayPlan(idx));
+    card.querySelector(".btn-day-delete").addEventListener("click", () => deleteDayPlan(idx));
+    list.appendChild(card);
+  });
+}
+
+document.getElementById("btn-save-day").addEventListener("click", () => {
+  const date = planDateInput.value;
+  if (!date) { alert("Please pick a date first."); return; }
+  if (selected.size === 0) { alert("Please select at least one food item."); return; }
+
+  const plans = loadDayPlans();
+  const items = [];
+  selected.forEach(({ food, qty }) => {
+    const eq = qty || food.qty;
+    items.push({
+      item: food.item, meal: food.meal || "Lunch", qty: eq, category: food.category,
+      fats:     scaleValue(food.fats,     food.qty, eq),
+      carbs:    scaleValue(food.carbs,    food.qty, eq),
+      protein:  scaleValue(food.protein,  food.qty, eq),
+      calories: scaleValue(food.calories, food.qty, eq),
+    });
+  });
+
+  const existingIdx = plans.findIndex(p => p.date === date);
+  if (existingIdx >= 0) {
+    if (!confirm(`A plan for ${date} already exists. Replace it?`)) return;
+    plans[existingIdx] = { date, items };
+  } else {
+    plans.push({ date, items });
+    plans.sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  saveDayPlans(plans);
+  renderDayPlans();
+
+  // Advance date by 1 for next day convenience
+  const next = new Date(date + "T00:00:00");
+  next.setDate(next.getDate() + 1);
+  planDateInput.value = next.toISOString().slice(0, 10);
+
+  selected.clear();
+  renderTable();
+  showToast(`✅ Day plan saved for ${date}`, "success");
+});
+
+function loadDayPlan(idx) {
+  const plan = loadDayPlans()[idx];
+  if (!plan) return;
+  planDateInput.value = plan.date;
+  selected.clear();
+  plan.items.forEach(i => {
+    const match = FOOD_DB.find(f => normalise(f.item) === normalise(i.item));
+    if (match) selected.set(normalise(match.item), { food: match, qty: i.qty });
+  });
+  renderTable();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  showToast(`↩ Loaded plan for ${plan.date}`, "success");
+}
+
+function deleteDayPlan(idx) {
+  const plans = loadDayPlans();
+  plans.splice(idx, 1);
+  saveDayPlans(plans);
+  renderDayPlans();
+}
+
+document.getElementById("btn-clear-day-plan").addEventListener("click", () => {
+  if (!confirm("Delete all day plans?")) return;
+  saveDayPlans([]);
+  renderDayPlans();
+});
+
+document.getElementById("btn-export-days").addEventListener("click", () => {
+  const plans = loadDayPlans();
+  if (plans.length === 0) { alert("No day plans saved yet."); return; }
+
+  const aoa    = [];
+  const merges = [];
+
+  plans.forEach(plan => {
+    const dateLabel = new Date(plan.date + "T00:00:00").toLocaleDateString("en-IN", {
+      weekday:"long", day:"2-digit", month:"long", year:"numeric"
+    });
+
+    const dateRow = aoa.length;
+    aoa.push([dateLabel, "", "", "", "", "", ""]);
+    merges.push({ s:{r:dateRow,c:0}, e:{r:dateRow,c:6} });
+    aoa.push(["Meal", "Item", "Qty", "Fats (g)", "Carbs (g)", "Protein (g)", "Calories (kcal)"]);
+
+    const groups = {};
+    MEAL_ORDER_DP.forEach(m => { groups[m] = []; });
+    plan.items.forEach(i => {
+      const k = MEAL_ORDER_DP.includes(i.meal) ? i.meal : "Lunch";
+      groups[k].push(i);
+    });
+
+    let dFats = 0, dCarbs = 0, dProtein = 0, dCal = 0;
+
+    MEAL_ORDER_DP.forEach(meal => {
+      const items = groups[meal];
+      if (!items.length) return;
+      const startRow = aoa.length;
+      const lastIdx  = items.length - 1;
+      items.forEach((d, i) => {
+        aoa.push([
+          i === lastIdx ? meal : "",
+          d.item, d.qty,
+          fmt(d.fats), fmt(d.carbs), fmt(d.protein), Math.round(d.calories),
+        ]);
+        dFats += d.fats; dCarbs += d.carbs; dProtein += d.protein; dCal += d.calories;
+      });
+      if (items.length > 1) merges.push({ s:{r:startRow,c:0}, e:{r:startRow+lastIdx,c:0} });
+    });
+
+    aoa.push(["TOTAL","","", fmt(dFats), fmt(dCarbs), fmt(dProtein), Math.round(dCal)]);
+    aoa.push(["","","","","","",""]);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws["!merges"] = merges;
+  ws["!cols"]   = [{wch:22},{wch:22},{wch:12},{wch:10},{wch:10},{wch:12},{wch:16}];
+  ws["!sheetViews"] = [{ showGridLines: false }];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Day Plans");
+  const name  = (document.getElementById("p-name")?.value || "patient").replace(/\s+/g,"_");
+  const today = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `day-plan-${name}-${today}.xlsx`);
+});
 
 const HISTORY_KEY = "diet_patient_history";
 
@@ -912,6 +1110,7 @@ async function init() {
 
     renderTable();
     renderHistory();
+    renderDayPlans();
   } catch (err) {
     console.error("Failed to load food data:", err);
     tbody.innerHTML = `
