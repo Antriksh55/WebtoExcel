@@ -685,10 +685,10 @@
         const lastIdx  = itemData.length - 1;
 
         itemData.forEach((d, i) => {
-          // Meal label on last row only — no merge
+          // Meal label on FIRST row — merge reads from first cell
           aoa.push([
-            i === lastIdx ? meal.label : "",
-            i === lastIdx ? visitNo   : "",
+            i === 0 ? meal.label : "",
+            i === 0 ? visitNo   : "",
             d.item, d.qty,
             d.fats, d.carbs, d.protein, d.cal,
           ]);
@@ -697,6 +697,12 @@
           grandProtein += d._protein;
           grandCal     += d._cal;
         });
+
+        // Merge meal label and visit no columns across all rows of this group
+        if (itemData.length > 1) {
+          merges.push({ s:{r:startRow,c:0}, e:{r:startRow+lastIdx,c:0} });
+          merges.push({ s:{r:startRow,c:1}, e:{r:startRow+lastIdx,c:1} });
+        }
 
         // Blank separator row between meals
         aoa.push(["","","","","","","",""]);

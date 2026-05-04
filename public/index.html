@@ -89,8 +89,20 @@
         <button class="btn btn-secondary" id="btn-clear-all">Clear All</button>
         <button class="btn btn-add"       id="btn-add-food">＋ Add Food</button>
         <button class="btn btn-save-hist" id="btn-save-history">💾 Save Report</button>
-        <button class="btn btn-save-day"  id="btn-save-day">📅 Save Day</button>
         <button class="btn btn-primary"   id="btn-export">⬇ Download Excel</button>
+      </div>
+    </div>
+
+    <!-- Date Picker + Save Day Bar -->
+    <div class="date-save-bar">
+      <div class="dsb-left">
+        <span class="dsb-icon">📅</span>
+        <label for="plan-date" class="dsb-label">Select Date</label>
+        <input type="date" id="plan-date" />
+      </div>
+      <div class="dsb-right">
+        <span class="dsb-saved-count" id="dsb-saved-count"></span>
+        <button class="btn btn-save-day" id="btn-save-day">💾 Save Day</button>
       </div>
     </div>
 
@@ -135,30 +147,23 @@
       <div class="summary-nutrients" id="summary-nutrients"></div>
     </div>
 
-    <!-- Day Planner Bar -->
-    <div class="day-planner-bar">
-      <div class="dp-left">
-        <span class="dp-icon">📅</span>
-        <span class="dp-label">Planning for:</span>
-        <input type="date" id="plan-date" />
-      </div>
-      <div class="dp-right">
-        <span class="dp-hint" id="dp-hint">Select items above then click Save Day</span>
-        <button class="btn btn-secondary" id="btn-clear-day-plan">🗑 Clear All Days</button>
-        <button class="btn btn-primary"   id="btn-export-days">⬇ Download Day Plan Excel</button>
-      </div>
-    </div>
-
-    <!-- Day Plans Panel -->
+    <!-- Saved Days Panel -->
     <div class="day-plans-panel" id="day-plans-panel">
       <div class="dpp-header">
-        <span class="dpp-title">📋 Day-wise Plan</span>
-        <span class="dpp-count" id="dpp-count">0 days</span>
+        <div class="dpp-title-wrap">
+          <span>📋</span>
+          <span class="dpp-title">Saved Day Plans</span>
+          <span class="dpp-count" id="dpp-count">0 days</span>
+        </div>
+        <div class="dpp-actions">
+          <button class="btn btn-secondary" id="btn-clear-day-plan">🗑 Clear All</button>
+          <button class="btn btn-primary"   id="btn-export-days">⬇ Download All Days Excel</button>
+        </div>
       </div>
       <div id="dpp-list" class="dpp-list">
         <div class="dpp-empty" id="dpp-empty">
           <span>📅</span>
-          <p>No days saved yet. Pick a date, select meals, and click "Save Day".</p>
+          <p>No days saved yet. Pick a date, select meals above, and click "Save Day".</p>
         </div>
       </div>
     </div>

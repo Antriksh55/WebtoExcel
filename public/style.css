@@ -1328,3 +1328,70 @@ body {
   border: 1px solid var(--border);
   color: var(--text);
 }
+
+/* ── Date Save Bar ───────────────────────────────────────────── */
+.date-save-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .75rem;
+  background: linear-gradient(135deg, rgba(79,142,247,.08), rgba(168,85,247,.08));
+  border: 1px solid rgba(79,142,247,.25);
+  border-radius: var(--radius-lg);
+  padding: .75rem 1.1rem;
+  margin-bottom: .75rem;
+}
+
+.dsb-left {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+.dsb-icon  { font-size: 1.2rem; }
+.dsb-label {
+  font-size: .8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--accent);
+  white-space: nowrap;
+}
+#plan-date {
+  border: 1px solid rgba(79,142,247,.4);
+  border-radius: var(--radius);
+  padding: .45rem .75rem;
+  font-size: .9rem;
+  background: var(--bg2);
+  color: var(--text);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+#plan-date:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.dsb-right {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+
+.dsb-saved-count {
+  font-size: .8rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Update dpp-header to have actions */
+.dpp-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.dpp-actions {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+}

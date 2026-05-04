@@ -430,11 +430,12 @@ btnExport.addEventListener("click", () => {
     const items = groups[meal];
     if (!items || items.length === 0) return;
 
+    const startRow = aoa.length;
     const lastIdx  = items.length - 1;
 
     items.forEach((d, i) => {
       aoa.push([
-        i === lastIdx ? meal : "",   // label only on last row
+        i === 0 ? meal : "",   // label on FIRST row so merge shows it correctly
         d.item, d.qty,
         d.fats, d.carbs, d.protein, d.calories,
       ]);
@@ -443,6 +444,11 @@ btnExport.addEventListener("click", () => {
       tProtein += d._protein;
       tCal     += d._cal;
     });
+
+    // Merge meal label column across all rows of this group
+    if (items.length > 1) {
+      merges.push({ s:{r:startRow,c:0}, e:{r:startRow+lastIdx,c:0} });
+    }
 
     // blank separator between meals
     aoa.push(["", "", "", "", "", "", ""]);
@@ -636,8 +642,13 @@ function renderDayPlans() {
   const list  = document.getElementById("dpp-list");
   const empty = document.getElementById("dpp-empty");
   const count = document.getElementById("dpp-count");
+  const savedCount = document.getElementById("dsb-saved-count");
 
   count.textContent = `${plans.length} day${plans.length !== 1 ? "s" : ""}`;
+  savedCount.textContent = plans.length > 0
+    ? `${plans.length} day${plans.length !== 1 ? "s" : ""} saved`
+    : "";
+
   list.querySelectorAll(".day-card").forEach(c => c.remove());
 
   if (plans.length === 0) { empty.classList.remove("hidden"); return; }
@@ -790,12 +801,13 @@ document.getElementById("btn-export-days").addEventListener("click", () => {
       const lastIdx  = items.length - 1;
       items.forEach((d, i) => {
         aoa.push([
-          i === lastIdx ? meal : "",
+          i === 0 ? meal : "",   // label on FIRST row — merge reads from first cell
           d.item, d.qty,
           fmt(d.fats), fmt(d.carbs), fmt(d.protein), Math.round(d.calories),
         ]);
         dFats += d.fats; dCarbs += d.carbs; dProtein += d.protein; dCal += d.calories;
       });
+      // Merge meal label column across all rows of this group
       if (items.length > 1) merges.push({ s:{r:startRow,c:0}, e:{r:startRow+lastIdx,c:0} });
     });
 
@@ -813,6 +825,11 @@ document.getElementById("btn-export-days").addEventListener("click", () => {
   const name  = (document.getElementById("p-name")?.value || "patient").replace(/\s+/g,"_");
   const today = new Date().toISOString().slice(0,10);
   XLSX.writeFile(wb, `day-plan-${name}-${today}.xlsx`);
+
+  // Reset all saved day plans after download
+  saveDayPlans([]);
+  renderDayPlans();
+  showToast("✅ Downloaded! Day plans have been reset for next use.", "success");
 });
 
 const HISTORY_KEY = "diet_patient_history";
